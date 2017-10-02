@@ -1,5 +1,6 @@
 package id.pptik.semutangkot;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -9,13 +10,13 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 
 import id.pptik.semutangkot.fragments.WizardMediaFragment;
+import id.pptik.semutangkot.helper.AppPreferences;
 
 
-public class MainActivity extends AppCompatActivity {
+public class WizardActivity extends AppCompatActivity {
 
     private MyPagerAdapter adapter;
     private ViewPager pager;
@@ -23,12 +24,18 @@ public class MainActivity extends AppCompatActivity {
     private TextView nextButton;
     private TextView navigator;
     private int currentItem;
-    private Toolbar mToolbar;
+    private AppPreferences mAppPreferences;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mContext = this;
+        mAppPreferences = new AppPreferences(mContext);
+        boolean isLoggedIn = mAppPreferences.getBoolean(AppPreferences.KEY_IS_FIRST_LAUNCH, false);
+        if(isLoggedIn) toLoginActivity();
 
         currentItem = 0;
 
@@ -36,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
         previousButton = findViewById(R.id.activity_wizard_media_previous);
         nextButton = findViewById(R.id.activity_wizard_media_next);
         navigator = findViewById(R.id.activity_wizard_media_possition);
-        mToolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         getSupportActionBar().hide();
 
         previousButton.setVisibility(View.INVISIBLE);
@@ -50,15 +57,10 @@ public class MainActivity extends AppCompatActivity {
         pager.addOnPageChangeListener(new OnPageChangeListener() {
 
             @Override
-            public void onPageSelected(int position) {
-
-
-            }
+            public void onPageSelected(int position) {}
 
             @Override
-            public void onPageScrolled(int arg0, float arg1, int arg2) {
-
-            }
+            public void onPageScrolled(int arg0, float arg1, int arg2) {}
 
             @Override
             public void onPageScrollStateChanged(int position) {
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                     previousButton.setVisibility(View.VISIBLE);
                 }
                 if (pager.getCurrentItem() == (pager.getAdapter().getCount() - 1)) {
-                    nextButton.setText("Login");
+                    nextButton.setText("LOGIN");
                 } else {
                     nextButton.setText("NEXT");
                 }
@@ -87,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
             if (pager.getCurrentItem() != (pager.getAdapter().getCount() - 1)) {
                 pager.setCurrentItem(pager.getCurrentItem() + 1);
             } else {
-                Toast.makeText(MainActivity.this, "Finish",
-                        Toast.LENGTH_SHORT).show();
+                toLoginActivity();
+                mAppPreferences.put(AppPreferences.KEY_IS_FIRST_LAUNCH, true);
             }
             setNavigator();
         });
@@ -146,5 +148,10 @@ public class MainActivity extends AppCompatActivity {
                 return WizardMediaFragment.newInstance(position);
             }
         }
+    }
+
+
+    private void toLoginActivity(){
+        finish();
     }
 }
