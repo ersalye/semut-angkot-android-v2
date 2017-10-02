@@ -77,29 +77,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        previousButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (pager.getCurrentItem() != 0) {
-                    pager.setCurrentItem(pager.getCurrentItem() - 1);
-                }
-                setNavigator();
+        previousButton.setOnClickListener(v -> {
+            if (pager.getCurrentItem() != 0) {
+                pager.setCurrentItem(pager.getCurrentItem() - 1);
             }
+            setNavigator();
         });
 
-        nextButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (pager.getCurrentItem() != (pager.getAdapter().getCount() - 1)) {
-                    pager.setCurrentItem(pager.getCurrentItem() + 1);
-                } else {
-                    Toast.makeText(MainActivity.this, "Finish",
-                            Toast.LENGTH_SHORT).show();
-                }
-                setNavigator();
+        nextButton.setOnClickListener(v -> {
+            if (pager.getCurrentItem() != (pager.getAdapter().getCount() - 1)) {
+                pager.setCurrentItem(pager.getCurrentItem() + 1);
+            } else {
+                Toast.makeText(MainActivity.this, "Finish",
+                        Toast.LENGTH_SHORT).show();
             }
+            setNavigator();
         });
 
     }
