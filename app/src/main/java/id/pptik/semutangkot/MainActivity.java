@@ -8,7 +8,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
@@ -108,14 +107,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         navigator.setText(navigation);
-    }
-
-    public void setCurrentSlidePosition(int position) {
-        this.currentItem = position;
-    }
-
-    public int getCurrentSlidePosition() {
-        return this.currentItem;
     }
 
 
