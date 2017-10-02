@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_background_wizard_media" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:orientation="vertical" >
+
+        <id.pptik.semutangkot.ui.MaterialDesignIconsTextView
+            android:id="@+id/fragment_wizard_media_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="0dp"
+            android:layout_weight="0"
+            android:gravity="center"
+            android:padding="0dp"
+            android:text="@string/material_icon_cloud_univ_first"
+            android:textColor="@color/cpb_white"
+            android:textSize="110sp" />
+
+        <TextView
+            android:id="@+id/fragment_wizard_media_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="48dp"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="Fragment Example"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:fontFamily="@font/walkway"/>
+
+        <TextView
+            android:id="@+id/fragment_wizard_media_text"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:maxLines="3"
+            android:text="@string/lorem_ipsum_long"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:fontFamily="@font/walkway" />
+    </LinearLayout>
+
+</RelativeLayout>
