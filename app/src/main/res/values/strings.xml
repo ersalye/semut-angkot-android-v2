@@ -197,6 +197,6 @@
         completions."
     </string>
     <string name="facebook_login">Login dengan Facebook</string>
-    <string name="google_login">Login dengan Google</string>
+    <string name="google_login">Login dengan Google+</string>
 
 </resources>

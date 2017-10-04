@@ -31,9 +31,9 @@ public class LoginActivity extends AppCompatActivity{
         mGoogleButton = findViewById(R.id.google_button);
 
         Drawable fbIcon = CustomDrawable.fontAwesome(mContext,
-                FontAwesome.Icon.faw_facebook, 24, R.color.cpb_white);
+                FontAwesome.Icon.faw_facebook, 24, R.color.facebook_color);
         Drawable googleIcon = CustomDrawable.fontAwesome(mContext,
-                FontAwesome.Icon.faw_google_plus, 24, R.color.cpb_white);
+                FontAwesome.Icon.faw_google_plus, 24, R.color.googleplus_color);
 
         mFbButton.setCompoundDrawables(fbIcon, null, null, null);
         mGoogleButton.setCompoundDrawables(googleIcon, null, null, null);

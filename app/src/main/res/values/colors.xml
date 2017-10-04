@@ -361,4 +361,8 @@
     <color name="cpb_green_dark">#ff6d9b00</color>
     <color name="cpb_white">@android:color/white</color>
     <color name="email_color">#e0e2e2</color>
+    
+    
+    <color name="facebook_color">#3b5998</color>
+    <color name="googleplus_color">#a13123</color>
 </resources>
