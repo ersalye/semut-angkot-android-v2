@@ -16,6 +16,7 @@ import com.maksim88.easylogin.AccessToken;
 import com.maksim88.easylogin.EasyLogin;
 import com.maksim88.easylogin.listener.OnLoginCompleteListener;
 import com.maksim88.easylogin.networks.FacebookNetwork;
+import com.maksim88.easylogin.networks.GooglePlusNetwork;
 import com.maksim88.easylogin.networks.SocialNetwork;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 
@@ -32,6 +33,8 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
     private Button mGoogleButton;
     private Context mContext;
     private EasyLogin easyLogin;
+    private GooglePlusNetwork gPlusNetwork;
+    private static final String TAG = LoginActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +54,7 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
         Drawable fbIcon = CustomDrawable.fontAwesome(mContext,
                 FontAwesome.Icon.faw_facebook, 24, R.color.facebook_color);
         Drawable googleIcon = CustomDrawable.fontAwesome(mContext,
-                FontAwesome.Icon.faw_google_plus, 24, R.color.googleplus_color);
+                FontAwesome.Icon.faw_google, 24, R.color.googleplus_color);
 
         mFbButton.setCompoundDrawables(fbIcon, null, null, null);
         mGoogleButton.setCompoundDrawables(googleIcon, null, null, null);
@@ -65,8 +68,33 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
         facebook.requestLogin(fbLogin, this);
         mFbButton.setOnClickListener(view -> fbLogin.performClick());
 
+
+
+        easyLogin.addSocialNetwork(new GooglePlusNetwork(this));
+        gPlusNetwork = (GooglePlusNetwork) easyLogin.getSocialNetwork(SocialNetwork.Network.GOOGLE_PLUS);
+        gPlusNetwork.setListener(this);
+        gPlusNetwork.setSignInButton(mGoogleButton);
+        mGoogleButton.setOnClickListener(view -> {
+            if (!gPlusNetwork.isConnected()) {
+                gPlusNetwork.requestLogin(LoginActivity.this);
+            }else {
+                Log.i(TAG, "Google not ready");
+            }
+        });
+
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!gPlusNetwork.isConnected()) {
+          //  gPlusNetwork.silentSignIn();
+            mGoogleButton.setEnabled(true);
+        } else {
+            mGoogleButton.setEnabled(false);
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -80,6 +108,9 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
         if (network == SocialNetwork.Network.FACEBOOK) {
             AccessToken token = easyLogin.getSocialNetwork(SocialNetwork.Network.FACEBOOK).getAccessToken();
             Log.d("MAIN", "FACEBOOK Login successful: " + token.getToken() + "|||" + token.getEmail()+" || "+token.getUserId());
+        }else if (network == SocialNetwork.Network.GOOGLE_PLUS) {
+            AccessToken token = easyLogin.getSocialNetwork(SocialNetwork.Network.GOOGLE_PLUS).getAccessToken();
+            Log.d("MAIN", "G+ Login successful: " + token.getToken() + "|||" + token.getEmail());
         }
     }
 

@@ -67,7 +67,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:text="@string/facebook_login"
-                        android:textColor="@color/facebook_color"
+                        android:textColor="@color/cpb_white"
                         android:drawablePadding="10dp"
                         android:padding="10dp"
                         android:textStyle="bold" />
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
                     android:text="@string/google_login"
-                    android:textColor="@color/googleplus_color"
+                    android:textColor="@color/cpb_white"
                     android:drawablePadding="10dp"
                     android:padding="10dp"
                     android:textStyle="bold" />

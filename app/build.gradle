@@ -7,7 +7,7 @@ android {
     defaultConfig {
         renderscriptTargetApi 25
         renderscriptSupportModeEnabled true
-        applicationId "id.pptik.semutangkot"
+        applicationId "id.pptik.semutapp"
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
