@@ -14,6 +14,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {
@@ -28,6 +29,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.android.support:support-vector-drawable:26.1.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -49,5 +51,7 @@ dependencies {
     compile 'com.github.javiersantos:BottomDialogs:1.2.1'
     compile 'com.github.hynra:GSON-SharedPreferences:1.1'
     compile 'com.karumi:dexter:4.1.0'
+    compile 'com.github.hynra:wortel:0.0.1'
+    compile 'org.osmdroid:osmdroid-android:5.6.5'
     testCompile 'junit:junit:4.12'
 }

@@ -1,5 +1,6 @@
 package id.pptik.semutangkot;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import com.daimajia.androidanimations.library.Techniques;
@@ -107,6 +108,11 @@ public class SplashScreenActivity extends SplasherActivity {
                                     try {
                                         if(jResult.getBoolean("success")){
                                             // to main
+                                            startActivity(new Intent(
+                                                    SplashScreenActivity.this,
+                                                    MapActivity.class
+                                            ));
+                                            finish();
                                         }else {
                                             CommonDialogs.showRelateError(
                                                     SplashScreenActivity.this,
