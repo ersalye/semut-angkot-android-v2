@@ -1,6 +1,8 @@
 package id.pptik.semutangkot.networking;
 
 
+import android.util.Log;
+
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
@@ -35,6 +37,25 @@ public class RequestRest {
                     @Override
                     public void onResponse(JSONObject response) {
                         handler.onFinishRequest(response, Constants.ENDPOINT_LOGIN);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, Constants.ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+    public static void checkStatus(String token, RestResponHandler handler){
+        String endPoint = StringResources.get(R.string.apiEndPoint);
+        AndroidNetworking.post(endPoint+ Constants.ENDPOINT_STATUS)
+                .addBodyParameter("Token", token)
+                .setTag(Constants.ENDPOINT_STATUS)
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, Constants.ENDPOINT_STATUS);
                     }
                     @Override
                     public void onError(ANError error) {

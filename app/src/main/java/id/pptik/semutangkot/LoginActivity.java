@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import com.facebook.login.widget.LoginButton;
+import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
+import com.google.gson.Gson;
 import com.maksim88.easylogin.AccessToken;
 import com.maksim88.easylogin.EasyLogin;
 import com.maksim88.easylogin.listener.OnLoginCompleteListener;
@@ -19,14 +21,18 @@ import com.maksim88.easylogin.networks.SocialNetwork;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
 
+import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.interfaces.Constants;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
+import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
 import id.pptik.semutangkot.utils.CustomDrawable;
 
@@ -42,20 +48,40 @@ public class LoginActivity extends AppCompatActivity
     private GooglePlusNetwork gPlusNetwork;
     private static final String TAG = LoginActivity.class.getSimpleName();
     private LoadingIndicator mIndicator;
+    private AppPreferences appPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        mContext = this;
+        appPreferences = new AppPreferences(this);
+        if(appPreferences.getBoolean(AppPreferences.KEY_IS_LOGGED_IN, false)){
+            toSplash();
+        }else {
+            initSocialLogin();
+        }
 
-        EasyLogin.initialize();
-        easyLogin = EasyLogin.getInstance();
+
 
         mIndicator = new LoadingIndicator(LoginActivity.this);
 
         getSupportActionBar().hide();
 
-        mContext = this;
+
+
+
+
+    }
+
+    private void toSplash() {
+        startActivity(new Intent(this, SplashScreenActivity.class));
+        finish();
+    }
+
+    private void initSocialLogin() {
+        EasyLogin.initialize();
+        easyLogin = EasyLogin.getInstance();
 
         mFbButton = findViewById(R.id.facebook_button);
         mGoogleButton = findViewById(R.id.google_button);
@@ -67,18 +93,15 @@ public class LoginActivity extends AppCompatActivity
 
         mFbButton.setCompoundDrawables(fbIcon, null, null, null);
         mGoogleButton.setCompoundDrawables(googleIcon, null, null, null);
-
-
         List<String> fbScope = Arrays.asList("public_profile", "email");
-        easyLogin.addSocialNetwork(new FacebookNetwork(this, fbScope));
+
+        if(!easyLogin.getInitializedSocialNetworks().contains(new FacebookNetwork(this, fbScope)))
+            easyLogin.addSocialNetwork(new FacebookNetwork(this, fbScope));
 
         FacebookNetwork facebook = (FacebookNetwork) easyLogin.getSocialNetwork(SocialNetwork.Network.FACEBOOK);
         LoginButton fbLogin = findViewById(R.id.facebook_login_button);
         facebook.requestLogin(fbLogin, this);
         mFbButton.setOnClickListener(view -> fbLogin.performClick());
-
-
-
         easyLogin.addSocialNetwork(new GooglePlusNetwork(this));
         gPlusNetwork = (GooglePlusNetwork) easyLogin.getSocialNetwork(SocialNetwork.Network.GOOGLE_PLUS);
         gPlusNetwork.setListener(this);
@@ -91,19 +114,18 @@ public class LoginActivity extends AppCompatActivity
                 Log.i(TAG, "Google not ready");
             }
         });
-
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (!gPlusNetwork.isConnected()) {
-          //  gPlusNetwork.silentSignIn();
+        /*if (!gPlusNetwork.isConnected()) {
+            gPlusNetwork.silentSignIn();
             mGoogleButton.setEnabled(true);
         } else {
             mGoogleButton.setEnabled(false);
-        }
+        }*/
     }
 
     @Override
@@ -144,8 +166,22 @@ public class LoginActivity extends AppCompatActivity
         switch (type){
             case Constants.ENDPOINT_LOGIN:
                 Log.i(TAG, jResult.toString());
+                try {
+                    if(!jResult.getBoolean("success")){
+                        CommonDialogs.showError(mContext, jResult.getString("message"));
+                    }else {
+                        Profile profile = new Gson().fromJson(jResult.getJSONObject("Profile").toString(),
+                                Profile.class);
+                        new GSONSharedPreferences(mContext).saveObject(profile);
+                        appPreferences.put(AppPreferences.KEY_IS_LOGGED_IN, true);
+                        toSplash();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
             case Constants.ENDPOINT_ERROR:
+                CommonDialogs.showEndPointError(mContext);
                 break;
         }
     }
