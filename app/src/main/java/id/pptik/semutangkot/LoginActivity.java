@@ -8,9 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-
 import com.facebook.login.widget.LoginButton;
 import com.maksim88.easylogin.AccessToken;
 import com.maksim88.easylogin.EasyLogin;
@@ -20,13 +18,21 @@ import com.maksim88.easylogin.networks.GooglePlusNetwork;
 import com.maksim88.easylogin.networks.SocialNetwork;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 
+
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.List;
 
+import id.pptik.semutangkot.interfaces.Constants;
+import id.pptik.semutangkot.interfaces.RestResponHandler;
+import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.ui.LoadingIndicator;
 import id.pptik.semutangkot.utils.CustomDrawable;
 
 
-public class LoginActivity extends AppCompatActivity implements OnLoginCompleteListener {
+public class LoginActivity extends AppCompatActivity
+        implements OnLoginCompleteListener, RestResponHandler {
 
 
     private Button mFbButton;
@@ -35,6 +41,7 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
     private EasyLogin easyLogin;
     private GooglePlusNetwork gPlusNetwork;
     private static final String TAG = LoginActivity.class.getSimpleName();
+    private LoadingIndicator mIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +50,8 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
 
         EasyLogin.initialize();
         easyLogin = EasyLogin.getInstance();
+
+        mIndicator = new LoadingIndicator(LoginActivity.this);
 
         getSupportActionBar().hide();
 
@@ -77,6 +86,7 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
         mGoogleButton.setOnClickListener(view -> {
             if (!gPlusNetwork.isConnected()) {
                 gPlusNetwork.requestLogin(LoginActivity.this);
+
             }else {
                 Log.i(TAG, "Google not ready");
             }
@@ -107,16 +117,37 @@ public class LoginActivity extends AppCompatActivity implements OnLoginCompleteL
         Log.i("MAIN", network.name());
         if (network == SocialNetwork.Network.FACEBOOK) {
             AccessToken token = easyLogin.getSocialNetwork(SocialNetwork.Network.FACEBOOK).getAccessToken();
-            Log.d("MAIN", "FACEBOOK Login successful: " + token.getToken() + "|||" + token.getEmail()+" || "+token.getUserId());
+            loginToServer(token.getToken(), "facebook",
+                    token.getUserId(), token.getUserName(), token.getEmail());
         }else if (network == SocialNetwork.Network.GOOGLE_PLUS) {
             AccessToken token = easyLogin.getSocialNetwork(SocialNetwork.Network.GOOGLE_PLUS).getAccessToken();
-            Log.d("MAIN", "G+ Login successful: " + token.getToken() + "|||" + token.getEmail());
+            loginToServer(token.getToken(), "google",
+                    token.getUserId(), token.getUserName(), token.getEmail());
+
         }
     }
 
     @Override
     public void onError(SocialNetwork.Network socialNetwork, String errorMessage) {
         Log.e("MAIN", "ERROR!" + socialNetwork + "|||" + errorMessage);
+    }
+
+
+    private void loginToServer(String token, String strategy, String id, String name, String email){
+        mIndicator.show();
+        RequestRest.login(token, strategy, id, name, email, this);
+    }
+
+    @Override
+    public void onFinishRequest(JSONObject jResult, String type) {
+        mIndicator.hide();
+        switch (type){
+            case Constants.ENDPOINT_LOGIN:
+                Log.i(TAG, jResult.toString());
+                break;
+            case Constants.ENDPOINT_ERROR:
+                break;
+        }
     }
 }
 

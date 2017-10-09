@@ -90,4 +90,5 @@
             </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
+    <include layout="@layout/progress"/>
 </RelativeLayout>

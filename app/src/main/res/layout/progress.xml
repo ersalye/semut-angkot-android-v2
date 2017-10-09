@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:clickable="true"
+    android:id="@+id/indicator"
+    android:visibility="gone"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+    <io.github.yuweiguocn.lib.squareloading.SquareLoading
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_trans"
+        app:squareColor="@color/colorPrimaryDark"
+        app:squareSize="12dp"
+        app:squareCorner="2dp"
+        app:dividerSize="4dp"
+        app:xCount="4"
+        app:yCount="3"
+        android:id="@+id/loadingIndicator"
+        />
+</LinearLayout>
