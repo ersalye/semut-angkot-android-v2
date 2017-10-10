@@ -47,7 +47,11 @@
         <activity
             android:name=".MapActivity"
             android:label="@string/title_activity_map" />
-        <activity android:name=".CctvPlayer"></activity>
+        <activity android:name=".CctvPlayer" />
+        <activity
+            android:name=".TagsActivity"
+            android:theme="@style/Theme.Transparent"
+            />
     </application>
 
 </manifest>

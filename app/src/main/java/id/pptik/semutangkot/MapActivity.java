@@ -1,6 +1,7 @@
 package id.pptik.semutangkot;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -13,10 +14,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
@@ -27,6 +30,7 @@ import com.github.hynra.wortel.Factory;
 import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.google.gson.Gson;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.mikepenz.iconics.IconicsDrawable;
 import com.rabbitmq.client.Channel;
 
 import net.grandcentrix.tray.core.ItemNotFoundException;
@@ -46,6 +50,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import id.pptik.semutangkot.adapters.AngkotListAdapter;
 import id.pptik.semutangkot.adapters.PathListAdapter;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
@@ -60,6 +65,7 @@ import id.pptik.semutangkot.models.angkot.Angkot;
 import id.pptik.semutangkot.models.angkot.AngkotPost;
 import id.pptik.semutangkot.networking.RequestRest;
 import id.pptik.semutangkot.ui.AnimationView;
+import id.pptik.semutangkot.ui.BottomNavigationViewHelper;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
 import id.pptik.semutangkot.utils.CustomDrawable;
@@ -99,7 +105,9 @@ public class MapActivity extends AppCompatActivity implements
     private static final int LAPORAN_OVERLAY_ORDER = 1;
     private static final int JALUR_OVERLAY_ORDER = 0;
     private boolean mqIsRunning = false;
-    private RecyclerView mRecyclerView;
+    private RecyclerView mPathRecyclerView, mListRecycleView;
+    private AngkotListAdapter angkotListAdapter;
+    private ImageView addReportBtn, toMyLocBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +118,23 @@ public class MapActivity extends AppCompatActivity implements
         StrictMode.setThreadPolicy(policy);
 
         mMarkerDetailLayout = findViewById(R.id.markerdetail_layout);
-        mRecyclerView = findViewById(R.id.path_recycleview);
+        mPathRecyclerView = findViewById(R.id.path_recycleview);
+        mListRecycleView = findViewById(R.id.angkot_list_recycleview);
+        addReportBtn = findViewById(R.id.add_report_btn);
+        addReportBtn.setOnClickListener(view -> {
+            startActivity(new Intent(this, TagsActivity.class));
+        });
+        toMyLocBtn = findViewById(R.id.myloc_btn);
+
+        toMyLocBtn.setImageDrawable(CustomDrawable.googleMaterial(
+                this, GoogleMaterial.Icon.gmd_my_location,
+                44, R.color.colorPrimaryDark
+        ));
+
+        addReportBtn.setImageDrawable(CustomDrawable.googleMaterial(
+                this, GoogleMaterial.Icon.gmd_add,
+                24, R.color.cpb_white
+        ));
 
 
         mClosePopup = findViewById(R.id.close_popup);
@@ -154,12 +178,30 @@ public class MapActivity extends AppCompatActivity implements
         populateCctvData();
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
+        BottomNavigationViewHelper.disableShiftMode(navigation);
+        Menu menu = navigation.getMenu();
+        menu.findItem(R.id.navigation_filter).setIcon(new IconicsDrawable(mContext)
+                .icon(GoogleMaterial.Icon.gmd_layers)
+                .color(Color.parseColor("#ffffff"))
+                .sizeDp(34));
+        menu.findItem(R.id.navigation_path).setIcon(new IconicsDrawable(mContext)
+                .icon(GoogleMaterial.Icon.gmd_directions)
+                .color(Color.parseColor("#ffffff"))
+                .sizeDp(34));
+        menu.findItem(R.id.navigation_angkot_list).setIcon(new IconicsDrawable(mContext)
+                .icon(GoogleMaterial.Icon.gmd_list)
+                .color(Color.parseColor("#ffffff"))
+                .sizeDp(34));
+        menu.findItem(R.id.navigation_profile).setIcon(new IconicsDrawable(mContext)
+                .icon(GoogleMaterial.Icon.gmd_account_circle)
+                .color(Color.parseColor("#ffffff"))
+                .sizeDp(34));
 
         setupMap();
         setFilterLayout();
         setPathList();
-    }
 
+    }
 
     private void setPathList(){
         List<AngkotPath> pathList = new ArrayList<>();
@@ -171,9 +213,9 @@ public class MapActivity extends AppCompatActivity implements
             }
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
             linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            mRecyclerView.setHasFixedSize(true);
-            mRecyclerView.setLayoutManager(linearLayoutManager);
-            mRecyclerView.clearFocus();
+            mPathRecyclerView.setHasFixedSize(true);
+            mPathRecyclerView.setLayoutManager(linearLayoutManager);
+            mPathRecyclerView.clearFocus();
             PathListAdapter adapter = new PathListAdapter(this, (view, position) -> {
                 indicator.show();
                 RequestRest.getPath(
@@ -181,13 +223,32 @@ public class MapActivity extends AppCompatActivity implements
                         this
                 );
             }, pathList);
-            //mRecyclerView.setVisibility(View.GONE);
-            mRecyclerView.setAdapter(adapter);
+            mPathRecyclerView.setAdapter(adapter);
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (ItemNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setAngkotFilterList(){
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mListRecycleView.setHasFixedSize(true);
+        mListRecycleView.setLayoutManager(linearLayoutManager);
+        mListRecycleView.clearFocus();
+        updateAngkotFilterList();
+    }
+
+    private void updateAngkotFilterList(){
+        angkotListAdapter = new AngkotListAdapter(this, (view, position) -> {
+            mapView.getController().animateTo(new GeoPoint(
+                    angkots[position].getAngkot().getLocation().getCoordinates().get(1),
+                    angkots[position].getAngkot().getLocation().getCoordinates().get(0)
+            ));
+            mListRecycleView.setVisibility(View.GONE);
+        }, angkots);
+        mListRecycleView.setAdapter(angkotListAdapter);
     }
 
     private void connectToRabbit() {
@@ -201,7 +262,6 @@ public class MapActivity extends AppCompatActivity implements
         mqConsumer = this.mqFactory.createConsumer(this);
         consume();
     }
-
 
     private void consume(){
 
@@ -226,7 +286,6 @@ public class MapActivity extends AppCompatActivity implements
         });
     }
 
-
     private void populateMsg(String msg){
         try {
             JSONObject mainObject = new JSONObject(msg);
@@ -250,8 +309,7 @@ public class MapActivity extends AppCompatActivity implements
                     mapView.getOverlays().add(ANGKOT_OVERLAY_ORDER, markers[i]);
                     mapView.invalidate();
                 }
-                //setListView();
-                //animateToSelected();
+                setAngkotFilterList();
             }else {
                 if (angkotArray.length() == angkots.length) {
                     for (int i = 0; i < angkotArray.length(); i++) {
@@ -270,7 +328,6 @@ public class MapActivity extends AppCompatActivity implements
                                     markerAnimation.animate(mapView, markers[i],
                                             new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1), angkots[i].getAngkot().getLocation().getCoordinates().get(0)),
                                             1500);
-                                    //if (checkedState != -1) mapController.setZoom(17);
                                 } else {
                                     Log.i(TAG, "Same Position");
                                 }
@@ -279,8 +336,9 @@ public class MapActivity extends AppCompatActivity implements
                             e.printStackTrace();
                         }
                     }
-                 //   if(listView.getVisibility() == View.GONE) setListView();
-                 //   if(isTracked) animateToSelected();
+                    if(mListRecycleView.getVisibility() == View.VISIBLE)
+                        updateAngkotFilterList();
+
                     // post
                     angkotPosts = new AngkotPost[postArray.length()];
                     for(int i = 0; i < postArray.length(); i++){
@@ -316,7 +374,6 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
-
     private void populateCctvData() {
         indicator.show();
         RequestRest.bandungCctv(mProfile.getToken(), this);
@@ -344,18 +401,34 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.navigation_home:
+            case R.id.navigation_profile:
+                break;
+            case R.id.navigation_filter:
                 filterDialog.show();
-                if(mRecyclerView.getVisibility() == View.VISIBLE)
-                    mRecyclerView.setVisibility(View.GONE);
+                if(mPathRecyclerView.getVisibility() == View.VISIBLE)
+                    mPathRecyclerView.setVisibility(View.GONE);
+                if(mListRecycleView.getVisibility() == View.VISIBLE)
+                    mListRecycleView.setVisibility(View.GONE);
                 return true;
-            case R.id.navigation_dashboard:
-                if(mRecyclerView.getVisibility() == View.VISIBLE)
-                    mRecyclerView.setVisibility(View.GONE);
-                else mRecyclerView.setVisibility(View.VISIBLE);
+            case R.id.navigation_path:
+                if(mListRecycleView.getVisibility() == View.VISIBLE)
+                    mListRecycleView.setVisibility(View.GONE);
+                if(mPathRecyclerView.getVisibility() == View.VISIBLE)
+                    mPathRecyclerView.setVisibility(View.GONE);
+                else mPathRecyclerView.setVisibility(View.VISIBLE);
 
                 return true;
-            case R.id.navigation_notifications:
+            case R.id.navigation_angkot_list:
+                if(mListRecycleView.getVisibility() == View.VISIBLE)
+                    mListRecycleView.setVisibility(View.GONE);
+                else {
+                    if(angkotVisible)
+                        mListRecycleView.setVisibility(View.VISIBLE);
+                }
+
+                if(mPathRecyclerView.getVisibility() == View.VISIBLE)
+                    mPathRecyclerView.setVisibility(View.GONE);
+
 
                 return true;
         }
@@ -410,7 +483,6 @@ public class MapActivity extends AppCompatActivity implements
                 .build();
     }
 
-
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
         indicator.hide();
@@ -439,7 +511,7 @@ public class MapActivity extends AppCompatActivity implements
                 break;
             case RequestRest.ENDPOINT_GET_PATH:
                 Log.i(TAG, jResult.toString());
-                mRecyclerView.setVisibility(View.GONE);
+                mPathRecyclerView.setVisibility(View.GONE);
                 for(Overlay overlay : mapView.getOverlayManager().overlays()){
                     if(overlay instanceof Polyline){
                         mapView.getOverlayManager().overlays().remove(overlay);
@@ -512,14 +584,12 @@ public class MapActivity extends AppCompatActivity implements
         Log.i(TAG, message);
     }
 
-
     @Override
     public void onDestroy(){
         super.onDestroy();
         if(mqIsRunning)
             mqConsumer.stop();
     }
-
 
     @Override
     public void onPause(){
@@ -539,7 +609,6 @@ public class MapActivity extends AppCompatActivity implements
                 connectToRabbit();
         }
     }
-
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {

@@ -96,7 +96,7 @@ public class SplashScreenActivity extends SplasherActivity {
                     try {
                         Profile profile = (Profile) new GSONSharedPreferences(SplashScreenActivity.this).getObject(new Profile());
                         RequestRest.checkStatus(profile.getToken(), (jResult, type) -> {
-                            Log.i(this.getClass().getSimpleName(), jResult.toString());
+//                            Log.i(this.getClass().getSimpleName(), jResult.toString());
                             switch (type){
                                 case RequestRest.ENDPOINT_ERROR:
                                     CommonDialogs.showEndPointError(SplashScreenActivity.this);

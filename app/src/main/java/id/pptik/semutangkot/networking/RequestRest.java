@@ -20,6 +20,7 @@ public class RequestRest {
     public static final String ENDPOINT_ERROR = "endpoint.error";
     public static final String ENDPOINT_ANGKOT_PATH = "users/path";
     public static final String ENDPOINT_GET_PATH = "endpoint.get.path";
+    public static final String ENDPOINT_CREATE_POST = "post/create";
 
     public RequestRest(){
 
@@ -111,6 +112,33 @@ public class RequestRest {
     }
 
 
+
+
+    public static void createPost(String token, String detail, float lat, float lon, RestResponHandler handler){
+        String endPoint = StringResources.get(R.string.apiEndPoint);
+        AndroidNetworking.post(endPoint+ ENDPOINT_CREATE_POST)
+                .addBodyParameter("Token", token)
+                .addBodyParameter("detail", detail)
+                .addBodyParameter("latitude", String.valueOf(lat))
+                .addBodyParameter("longitude", String.valueOf(lon))
+                .setTag(ENDPOINT_STATUS)
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, ENDPOINT_CREATE_POST);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+
+
+
     public static void getPath(String url, RestResponHandler handler){
         AndroidNetworking.get(url)
                 .setTag(ENDPOINT_GET_PATH)
@@ -119,7 +147,7 @@ public class RequestRest {
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        handler.onFinishRequest(response, ENDPOINT_GET_PATH);
+                        handler.onFinishRequest(response, ENDPOINT_ANGKOT_PATH);
                     }
                     @Override
                     public void onError(ANError error) {

@@ -5,9 +5,6 @@ import com.google.gson.annotations.SerializedName;
 
 public class PostBy {
 
-    @SerializedName("UserID")
-    @Expose
-    private Integer userID;
     @SerializedName("username")
     @Expose
     private String username;
@@ -15,13 +12,6 @@ public class PostBy {
     @Expose
     private String name;
 
-    public Integer getUserID() {
-        return userID;
-    }
-
-    public void setUserID(Integer userID) {
-        this.userID = userID;
-    }
 
     public String getUsername() {
         return username;

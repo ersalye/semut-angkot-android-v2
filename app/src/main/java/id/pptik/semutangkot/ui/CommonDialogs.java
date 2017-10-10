@@ -32,6 +32,7 @@ public class CommonDialogs {
                         46, R.color.colorPrimary
                 ))
                 .setPositiveText("Keluar")
+                .setCancelable(false)
                 .onPositive(bottomDialog1 -> {
                     bottomDialog1.dismiss();
                     ((Activity)context).finish();
@@ -51,6 +52,7 @@ public class CommonDialogs {
                         46, R.color.colorPrimary
                 ))
                 .setPositiveText("Keluar")
+                .setCancelable(false)
                 .onPositive(bottomDialog1 -> {
                     bottomDialog1.dismiss();
                     ((Activity)context).finish();
@@ -66,6 +68,7 @@ public class CommonDialogs {
             BottomDialog bottomDialog = new BottomDialog.Builder(context)
                     .setTitle("Ups! Gagal memuat permintaan")
                     .setContent(content)
+                    .setCancelable(false)
                     .setIcon(CustomDrawable.googleMaterial(
                             context,
                             GoogleMaterial.Icon.gmd_do_not_disturb_off,
@@ -84,6 +87,7 @@ public class CommonDialogs {
     private static void logout(Context context){
         BottomDialog bottomDialog = new BottomDialog.Builder(context)
                 .setTitle("Sesi Habis")
+                .setCancelable(false)
                 .setContent("Sesi Anda telah berakhir, silahkan melakukan login kembali")
                 .setIcon(CustomDrawable.googleMaterial(
                         context,

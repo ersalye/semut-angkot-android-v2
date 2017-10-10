@@ -18,7 +18,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
+import com.github.hynra.gsonsharedpreferences.ParsingException;
 import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.Calendar;
@@ -26,6 +31,11 @@ import java.util.Date;
 import java.util.HashMap;
 
 import id.pptik.semutangkot.R;
+import id.pptik.semutangkot.helper.AppPreferences;
+import id.pptik.semutangkot.interfaces.RestResponHandler;
+import id.pptik.semutangkot.models.Profile;
+import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.ui.CommonDialogs;
 
 
 public class SubmitTagFragment extends Fragment implements TextWatcher{
@@ -42,9 +52,11 @@ public class SubmitTagFragment extends Fragment implements TextWatcher{
     Date currentDate;
     private ProgressDialog dialog;
     private Context context;
+    private AppPreferences preferences;
 
     public void setContext(Context context){
         this.context = context;
+        preferences = new AppPreferences(context);
     }
 
 
@@ -93,7 +105,35 @@ public class SubmitTagFragment extends Fragment implements TextWatcher{
         if(remarks.getText().toString().equals("")) Toast.makeText(getActivity(), "Anda belum mengisi keterangan", Toast.LENGTH_LONG).show();
         else {
             dialog.show();
-
+            GSONSharedPreferences g = new GSONSharedPreferences(context);
+            try {
+                Profile profile = (Profile) g.getObject(new Profile());
+                RequestRest.createPost(
+                        profile.getToken(),
+                        remarks.getText().toString(),
+                        preferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0),
+                        preferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0),
+                        (jResult, type) -> {
+                            if(type.equals(RequestRest.ENDPOINT_CREATE_POST)) {
+                                dialog.dismiss();
+                                try {
+                                    if (jResult.getBoolean("success")) {
+                                        Toast.makeText(context, "Berhasil menambahkan laporan", Toast.LENGTH_LONG).show();
+                                        getActivity().finish();
+                                    } else CommonDialogs.showRelateError(
+                                            context,
+                                            jResult.getString("message"),
+                                            jResult.getString("code")
+                                    );
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }else CommonDialogs.showEndPointError(context);
+                        }
+                );
+            } catch (ParsingException e) {
+                e.printStackTrace();
+            }
         }
 
     }
