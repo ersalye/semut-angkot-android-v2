@@ -19,6 +19,9 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginBottom="?attr/actionBarSize" />
+
+
+        <include layout="@layout/progress"/>
     </RelativeLayout>
 
     <android.support.design.widget.BottomNavigationView

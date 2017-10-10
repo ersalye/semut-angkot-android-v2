@@ -14,8 +14,6 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
-import id.pptik.semutangkot.interfaces.Constants;
-import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.networking.RequestRest;
 import id.pptik.semutangkot.ui.CommonDialogs;
@@ -26,7 +24,6 @@ import android.Manifest;
 import android.util.Log;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -101,10 +98,10 @@ public class SplashScreenActivity extends SplasherActivity {
                         RequestRest.checkStatus(profile.getToken(), (jResult, type) -> {
                             Log.i(this.getClass().getSimpleName(), jResult.toString());
                             switch (type){
-                                case Constants.ENDPOINT_ERROR:
+                                case RequestRest.ENDPOINT_ERROR:
                                     CommonDialogs.showEndPointError(SplashScreenActivity.this);
                                     break;
-                                case Constants.ENDPOINT_STATUS:
+                                case RequestRest.ENDPOINT_STATUS:
                                     try {
                                         if(jResult.getBoolean("success")){
                                             // to main

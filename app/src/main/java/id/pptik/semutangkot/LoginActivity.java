@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import id.pptik.semutangkot.helper.AppPreferences;
-import id.pptik.semutangkot.interfaces.Constants;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.networking.RequestRest;
@@ -164,7 +163,7 @@ public class LoginActivity extends AppCompatActivity
     public void onFinishRequest(JSONObject jResult, String type) {
         mIndicator.hide();
         switch (type){
-            case Constants.ENDPOINT_LOGIN:
+            case RequestRest.ENDPOINT_LOGIN:
                 Log.i(TAG, jResult.toString());
                 try {
                     if(!jResult.getBoolean("success")){
@@ -180,7 +179,7 @@ public class LoginActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
-            case Constants.ENDPOINT_ERROR:
+            case RequestRest.ENDPOINT_ERROR:
                 CommonDialogs.showEndPointError(mContext);
                 break;
         }
