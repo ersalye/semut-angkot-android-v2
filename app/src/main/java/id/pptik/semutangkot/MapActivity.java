@@ -85,6 +85,11 @@ public class MapActivity extends AppCompatActivity implements
     View customView;
     BottomDialog filterDialog;
     private boolean angkotVisible, cctvVisible, laporanVisible, jalurVisible;
+    private static final  int ANGKOT_OVERLAY_ORDER = 3;
+    private static final int CCTV_OVERLAY_ORDER = 2;
+    private static final int LAPORAN_OVERLAY_ORDER = 1;
+    private static final int JALUR_OVERLAY_ORDER = 0;
+    private boolean mqIsRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +119,7 @@ public class MapActivity extends AppCompatActivity implements
         mContext = this;
         appPreferences = new AppPreferences(mContext);
         angkotVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true);
+        if(angkotVisible && !mqIsRunning) connectToRabbit();
         cctvVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true);
         laporanVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true);
         jalurVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true);
@@ -158,6 +164,7 @@ public class MapActivity extends AppCompatActivity implements
         mqConsumer.setExchange(StringResources.get(R.string.MQ_EXCHANGE_NAME_ANGKOT));
         mqConsumer.setRoutingkey(StringResources.get(R.string.MQ_BROADCAST_ROUTING_KEY));
         mqConsumer.subsribe();
+        mqIsRunning = true;
         mqConsumer.setMessageListner(delivery -> {
             try {
                 final String message = new String(delivery.getBody(), "UTF-8");
@@ -195,7 +202,7 @@ public class MapActivity extends AppCompatActivity implements
                     markers[i].setRelatedObject(angkots[i]);
                     markers[i].setOnMarkerClickListener(this);
                     markers[i].setEnabled(angkotVisible);
-                    mapView.getOverlays().add(markers[i]);
+                    mapView.getOverlays().add(ANGKOT_OVERLAY_ORDER, markers[i]);
                     mapView.invalidate();
                 }
                 //setListView();
@@ -251,7 +258,7 @@ public class MapActivity extends AppCompatActivity implements
                         marker.setRelatedObject(angkotPosts[i]);
                         marker.setOnMarkerClickListener(this);
                         marker.setEnabled(laporanVisible);
-                        mapView.getOverlays().add(marker);
+                        mapView.getOverlays().add(LAPORAN_OVERLAY_ORDER, marker);
                         mapView.invalidate();
                     }
                 }else {
@@ -316,7 +323,7 @@ public class MapActivity extends AppCompatActivity implements
             marker.setRelatedObject(cctvs.get(i));
             marker.setOnMarkerClickListener(this);
             marker.setEnabled(cctvVisible);
-            mapView.getOverlayManager().add(marker);
+            mapView.getOverlayManager().add(CCTV_OVERLAY_ORDER, marker);
         }
         mapView.invalidate();
     }
@@ -356,8 +363,7 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
-        if(!type.equals(RequestRest.ENDPOINT_CCTV))
-            indicator.hide();
+        indicator.hide();
         switch (type){
             case RequestRest.ENDPOINT_ERROR:
                 CommonDialogs.showEndPointError(mContext);
@@ -372,7 +378,6 @@ public class MapActivity extends AppCompatActivity implements
                             cctvs.add(cctv);
                         }
                         addCctvtoMap();
-                        connectToRabbit();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -393,19 +398,20 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onConnectionSuccess(Channel channel) {
-        indicator.hide();
+
     }
 
     @Override
     public void onConnectionFailure(String message) {
         Log.i(TAG, message);
-        indicator.hide();
+        mqIsRunning = false;
         if(isFirsInit)
             CommonDialogs.showEndPointError(mContext);
     }
 
     @Override
     public void onConnectionClosed(String message) {
+        mqIsRunning = false;
         Log.i(TAG, message);
     }
 
@@ -413,7 +419,7 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     public void onDestroy(){
         super.onDestroy();
-        if(mqConsumer.isConnected())
+        if(mqIsRunning)
             mqConsumer.stop();
     }
 
@@ -422,7 +428,7 @@ public class MapActivity extends AppCompatActivity implements
     public void onPause(){
         super.onPause();
         isActivityPause = true;
-        if(mqConsumer.isConnected())
+        if(mqIsRunning)
             mqConsumer.stop();
 
     }
@@ -431,8 +437,10 @@ public class MapActivity extends AppCompatActivity implements
     public void onResume(){
         super.onResume();
         isActivityPause = false;
-        if(mqConsumer != null && !mqConsumer.isConnected() && angkotVisible)
-            connectToRabbit();
+        if(!isFirsInit) {
+            if (!mqIsRunning && angkotVisible)
+                connectToRabbit();
+        }
     }
 
 
@@ -443,11 +451,12 @@ public class MapActivity extends AppCompatActivity implements
                 appPreferences.put(AppPreferences.KEY_SHOW_ANGKOT, b);
                 angkotVisible = b;
                 if(!b) {
-                    if (mqConsumer.isConnected()) mqConsumer.stop();
+                    if (mqIsRunning) mqConsumer.stop();
                 }
                 else {
+                    if(!mqIsRunning)
                         connectToRabbit();
-                        Log.i(TAG, "hollyshiiit");
+
                     }
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
