@@ -453,7 +453,7 @@ public class MapActivity extends AppCompatActivity implements
                 appPreferences.put(AppPreferences.KEY_SHOW_ANGKOT, b);
                 angkotVisible = b;
                 if(!b) {
-                    if (mqIsRunning) mqConsumer.stop();
+                    if (mqIsRunning && !laporanVisible) mqConsumer.stop();
                 }
                 else {
                     if(!mqIsRunning)
@@ -490,7 +490,7 @@ public class MapActivity extends AppCompatActivity implements
                 appPreferences.put(AppPreferences.KEY_SHOW_LAPORAN, b);
                 laporanVisible = b;
                 if(!b) {
-                    if (mqIsRunning) mqConsumer.stop();
+                    if (mqIsRunning && !angkotVisible) mqConsumer.stop();
                 }
                 else {
                     if(!mqIsRunning)

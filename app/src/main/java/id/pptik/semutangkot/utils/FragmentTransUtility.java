@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 
 import id.pptik.semutangkot.fragments.map.AngkotReportFragment;
+import id.pptik.semutangkot.fragments.map.CctvFragment;
 import id.pptik.semutangkot.fragments.map.MapAngkotFragment;
 import id.pptik.semutangkot.fragments.map.MapTrackerFragment;
 
@@ -42,4 +43,11 @@ public class FragmentTransUtility {
         fragmentTransaction.replace(id, fragment);
         fragmentTransaction.commit();
     }
+
+    public void setCctvMapFragment(CctvFragment fragment, int id){
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(id, fragment);
+        fragmentTransaction.commit();
+    }
+
 }

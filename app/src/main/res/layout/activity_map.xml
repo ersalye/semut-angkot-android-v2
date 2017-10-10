@@ -21,7 +21,7 @@
             android:layout_marginBottom="?attr/actionBarSize" />
 
         <RelativeLayout
-            android:background="@drawable/gradient_trans"
+            android:background="@color/foregroundLoading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/markerdetail_layout"

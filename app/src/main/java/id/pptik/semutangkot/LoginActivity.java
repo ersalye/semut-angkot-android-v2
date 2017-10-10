@@ -159,10 +159,28 @@ public class LoginActivity extends AppCompatActivity
         RequestRest.login(token, strategy, id, name, email, this);
     }
 
+    private void populateAngkotPath(String token){
+        mIndicator.show();
+        RequestRest.angkotPath(token, this);
+    }
+
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
         mIndicator.hide();
         switch (type){
+            case RequestRest.ENDPOINT_ANGKOT_PATH:
+                try {
+                    if(!jResult.getBoolean("success")){
+                        CommonDialogs.showError(mContext, jResult.getString("message"));
+                    }else {
+                        appPreferences.put(AppPreferences.KEY_STORE_ANGKOT_PATH,
+                                jResult.getJSONArray("data").toString());
+                        toSplash();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                break;
             case RequestRest.ENDPOINT_LOGIN:
                 Log.i(TAG, jResult.toString());
                 try {
@@ -173,7 +191,8 @@ public class LoginActivity extends AppCompatActivity
                                 Profile.class);
                         new GSONSharedPreferences(mContext).saveObject(profile);
                         appPreferences.put(AppPreferences.KEY_IS_LOGGED_IN, true);
-                        toSplash();
+                        populateAngkotPath(profile.getToken());
+                        //toSplash();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

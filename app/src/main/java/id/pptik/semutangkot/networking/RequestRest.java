@@ -18,6 +18,7 @@ public class RequestRest {
     public static final String ENDPOINT_STATUS = "users/status";
     public static final String ENDPOINT_CCTV = "cctv/bandung";
     public static final String ENDPOINT_ERROR = "endpoint.error";
+    public static final String ENDPOINT_ANGKOT_PATH = "users/path";
 
     public RequestRest(){
 
@@ -79,6 +80,27 @@ public class RequestRest {
                     @Override
                     public void onResponse(JSONObject response) {
                         handler.onFinishRequest(response, ENDPOINT_CCTV);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+
+
+    public static void angkotPath(String token, RestResponHandler handler){
+        String endPoint = StringResources.get(R.string.apiEndPoint);
+        AndroidNetworking.post(endPoint+ ENDPOINT_ANGKOT_PATH)
+                .addBodyParameter("Token", token)
+                .setTag(ENDPOINT_STATUS)
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, ENDPOINT_ANGKOT_PATH);
                     }
                     @Override
                     public void onError(ANError error) {

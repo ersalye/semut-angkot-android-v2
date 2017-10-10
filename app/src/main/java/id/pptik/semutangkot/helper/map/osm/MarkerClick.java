@@ -9,8 +9,10 @@ import org.osmdroid.views.overlay.Marker;
 
 import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.fragments.map.AngkotReportFragment;
+import id.pptik.semutangkot.fragments.map.CctvFragment;
 import id.pptik.semutangkot.fragments.map.MapAngkotFragment;
 import id.pptik.semutangkot.fragments.map.MapTrackerFragment;
+import id.pptik.semutangkot.models.Cctv;
 import id.pptik.semutangkot.models.angkot.Angkot;
 import id.pptik.semutangkot.models.angkot.AngkotPost;
 import id.pptik.semutangkot.models.mapview.Tracker;
@@ -50,6 +52,12 @@ public class MarkerClick {
             AngkotReportFragment mapAngkotFragment = new AngkotReportFragment();
             mapAngkotFragment.setData((AngkotPost) marker.getRelatedObject());
             fragmentTransUtility.setAngkotReportFragment(mapAngkotFragment, frameView.getId());
+            frameView.setVisibility(View.VISIBLE);
+            frameView.startAnimation(fromRight);
+        }else if(marker.getRelatedObject() instanceof Cctv) {
+            CctvFragment mapCctvFragment = new CctvFragment();
+            mapCctvFragment.setData((Cctv) marker.getRelatedObject());
+            fragmentTransUtility.setCctvMapFragment(mapCctvFragment, frameView.getId());
             frameView.setVisibility(View.VISIBLE);
             frameView.startAnimation(fromRight);
         }

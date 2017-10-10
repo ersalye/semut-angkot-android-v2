@@ -12,6 +12,7 @@ public class AppPreferences extends TrayPreferences {
     public static String KEY_SHOW_LAPORAN = "key.show.laporan";
     public static String KEY_SHOW_CCTV = "key.show.cctv";
     public static String KEY_SHOW_JALUR = "key.show.jalur";
+    public static String KEY_STORE_ANGKOT_PATH = "key.store.angkot.path";
 
     public AppPreferences(Context context) {
         super(context, "App Module", 1);
