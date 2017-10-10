@@ -2,15 +2,27 @@ package id.pptik.semutangkot;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.Animation;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
 import com.github.hynra.gsonsharedpreferences.ParsingException;
+import com.github.hynra.wortel.BrokerCallback;
+import com.github.hynra.wortel.Consumer;
+import com.github.hynra.wortel.Factory;
 import com.google.gson.Gson;
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.rabbitmq.client.Channel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,36 +31,81 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+import id.pptik.semutangkot.helper.map.MarkerBearing;
+import id.pptik.semutangkot.helper.map.osm.MarkerClick;
+import id.pptik.semutangkot.helper.map.osm.OSMarkerAnimation;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Cctv;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.models.RequestStatus;
+import id.pptik.semutangkot.models.angkot.Angkot;
+import id.pptik.semutangkot.models.angkot.AngkotPost;
 import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.ui.AnimationView;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
+import id.pptik.semutangkot.utils.CustomDrawable;
+import id.pptik.semutangkot.utils.StringResources;
 
 public class MapActivity extends AppCompatActivity implements
-        BottomNavigationView.OnNavigationItemSelectedListener, RestResponHandler {
+        BottomNavigationView.OnNavigationItemSelectedListener, RestResponHandler,
+        Marker.OnMarkerClickListener, BrokerCallback {
 
 
 
     private Context mContext;
     private MapView mapView;
+    RelativeLayout mMarkerDetailLayout;
     private LoadingIndicator indicator;
     private GSONSharedPreferences gPrefs;
     private Profile mProfile;
     private ArrayList<Cctv> cctvs = new ArrayList<>();
+    private MarkerClick markerClick;
+    private Factory mqFactory;
+    private Consumer mqConsumer;
+    private final String TAG = this.getClass().getSimpleName();
+    private boolean isFirsInit = true;
+    private Marker[] markers;
+    private Angkot[] angkots;
+    private OSMarkerAnimation markerAnimation;
+    private AngkotPost[] angkotPosts;
+    private FloatingActionButton mClosePopup;
+    private Animation slideDown;
+    private boolean isActivityPause = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        mMarkerDetailLayout = findViewById(R.id.markerdetail_layout);
+        mClosePopup = findViewById(R.id.close_popup);
+        mClosePopup.setImageDrawable(
+                CustomDrawable.googleMaterial(
+                        this,
+                        GoogleMaterial.Icon.gmd_clear,
+                        46, R.color.colorPrimaryDark
+                )
+        );
+        mClosePopup.setOnClickListener(view -> mMarkerDetailLayout.startAnimation(slideDown));
+        AnimationView animationView = new AnimationView(this);
+        slideDown = animationView.getAnimation(R.anim.slide_down, anim -> {
+            if(mMarkerDetailLayout.getVisibility() == View.VISIBLE)
+                mMarkerDetailLayout.setVisibility(View.GONE);
+        });
+
+
         mContext = this;
+        markerAnimation = new OSMarkerAnimation();
         getSupportActionBar().hide();
         indicator = new LoadingIndicator(mContext);
         gPrefs = new GSONSharedPreferences(mContext);
@@ -58,12 +115,139 @@ public class MapActivity extends AppCompatActivity implements
             e.printStackTrace();
         }
 
+        markerClick = new MarkerClick(mContext, mMarkerDetailLayout);
+
         populateCctvData();
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
         setupMap();
     }
+
+
+    private void connectToRabbit() {
+        mqFactory = new Factory(StringResources.get(R.string.MQ_HOSTNAME),
+                StringResources.get(R.string.MQ_VIRTUAL_HOST),
+                StringResources.get(R.string.MQ_USERNAME),
+                StringResources.get(R.string.MQ_PASSWORD),
+                StringResources.get(R.string.MQ_EXCHANGE_NAME),
+                StringResources.get(R.string.MQ_DEFAULT_ROUTING_KEY),
+                Integer.parseInt(StringResources.get(R.string.MQ_PORT)));
+        mqConsumer = this.mqFactory.createConsumer(this);
+        consume();
+    }
+
+
+    private void consume(){
+
+        mqConsumer.setQueueName("");
+        mqConsumer.setExchange(StringResources.get(R.string.MQ_EXCHANGE_NAME_ANGKOT));
+        mqConsumer.setRoutingkey(StringResources.get(R.string.MQ_BROADCAST_ROUTING_KEY));
+        mqConsumer.subsribe();
+        mqConsumer.setMessageListner(delivery -> {
+            try {
+                final String message = new String(delivery.getBody(), "UTF-8");
+                Log.i(TAG, "-------------------------------------");
+                Log.i(TAG, "incoming message");
+                Log.i(TAG, "-------------------------------------");
+                Log.i(TAG, message);
+                if(mMarkerDetailLayout.getVisibility() == View.GONE)
+                    if(!isActivityPause) populateMsg(message);
+
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
+    private void populateMsg(String msg){
+        try {
+            JSONObject mainObject = new JSONObject(msg);
+            JSONArray angkotArray = mainObject.getJSONArray("angkot");
+            JSONArray postArray = mainObject.getJSONArray("laporan");
+            // angkot
+            if(isFirsInit){
+                isFirsInit = false;
+                indicator.hide();
+                angkots = new Angkot[angkotArray.length()];
+                markers = new Marker[angkotArray.length()];
+                for (int i = 0; i < angkotArray.length(); i++) {
+                    angkots[i] = new Gson().fromJson(angkotArray.get(i).toString(), Angkot.class);
+                    markers[i] = new Marker(mapView);
+                    markers[i].setPosition(new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1),
+                            angkots[i].getAngkot().getLocation().getCoordinates().get(0)));
+                    markers[i].setIcon(getResources().getDrawable(R.drawable.tracker_angkot));
+                    markers[i].setRelatedObject(angkots[i]);
+                    markers[i].setOnMarkerClickListener(this);
+                    mapView.getOverlays().add(markers[i]);
+                    mapView.invalidate();
+                }
+                //setListView();
+                //animateToSelected();
+            }else {
+                if (angkotArray.length() == angkots.length) {
+                    for (int i = 0; i < angkotArray.length(); i++) {
+                        JSONObject entity = null;
+                        try {
+                            entity = angkotArray.getJSONObject(i);
+                            Angkot angkot = new Gson().fromJson(entity.toString(), Angkot.class);
+                            if (angkots[i].getAngkot().getPlatNomor().equals(angkot.getAngkot().getPlatNomor())) { // update markers
+                                angkots[i] = new Gson().fromJson(entity.toString(), Angkot.class);
+                                if (markers[i].getPosition().getLatitude() != angkots[i].getAngkot().getLocation().getCoordinates().get(1) ||
+                                        markers[i].getPosition().getLongitude() != angkots[i].getAngkot().getLocation().getCoordinates().get(0)) {
+                                    double bearing = MarkerBearing.bearing(markers[i].getPosition().getLatitude(), markers[i].getPosition().getLongitude(),
+                                            angkots[i].getAngkot().getLocation().getCoordinates().get(1), angkots[i].getAngkot().getLocation().getCoordinates().get(0));
+                                    markers[i].setRelatedObject(angkots[i]);
+                                    markers[i].setRotation((float) bearing);
+                                    markerAnimation.animate(mapView, markers[i],
+                                            new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1), angkots[i].getAngkot().getLocation().getCoordinates().get(0)),
+                                            1500);
+                                    //if (checkedState != -1) mapController.setZoom(17);
+                                } else {
+                                    Log.i(TAG, "Same Position");
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                 //   if(listView.getVisibility() == View.GONE) setListView();
+                 //   if(isTracked) animateToSelected();
+                    // post
+                    angkotPosts = new AngkotPost[postArray.length()];
+                    for(int i = 0; i < postArray.length(); i++){
+                        angkotPosts[i] = new Gson().fromJson(postArray.get(i).toString(), AngkotPost.class);
+                    }
+                    for(Overlay overlay : mapView.getOverlays()){
+                        if(overlay instanceof Marker){
+                            if(((Marker) overlay).getRelatedObject() instanceof  AngkotPost){
+                                mapView.getOverlays().remove(overlay);
+                                mapView.invalidate();
+                            }
+                        }
+                    }
+                    // add markers
+                    for(int i = 0; i < angkotPosts.length; i++){
+                        Marker marker = new Marker(mapView);
+                        marker.setPosition(new GeoPoint(angkotPosts[i].getLocation().getCoordinates().get(1),
+                                angkotPosts[i].getLocation().getCoordinates().get(0)));
+                        marker.setIcon(getResources().getDrawable(R.drawable.angkot_icon));
+                        marker.setRelatedObject(angkotPosts[i]);
+                        marker.setOnMarkerClickListener(this);
+                        mapView.getOverlays().add(marker);
+                        mapView.invalidate();
+                    }
+                }else {
+                    // found new data
+                    isFirsInit = true;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void populateCctvData() {
         indicator.show();
@@ -111,7 +295,9 @@ public class MapActivity extends AppCompatActivity implements
                     cctvs.get(i).getLatitude(),
                     cctvs.get(i).getLongitude()
             ));
+            marker.setIcon(getResources().getDrawable(R.drawable.cctv_icon));
             marker.setRelatedObject(cctvs.get(i));
+            marker.setOnMarkerClickListener(this);
             mapView.getOverlayManager().add(marker);
         }
         mapView.invalidate();
@@ -120,7 +306,8 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
-        indicator.hide();
+        if(!type.equals(RequestRest.ENDPOINT_CCTV))
+            indicator.hide();
         switch (type){
             case RequestRest.ENDPOINT_ERROR:
                 CommonDialogs.showEndPointError(mContext);
@@ -135,6 +322,7 @@ public class MapActivity extends AppCompatActivity implements
                             cctvs.add(cctv);
                         }
                         addCctvtoMap();
+                        connectToRabbit();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -146,4 +334,55 @@ public class MapActivity extends AppCompatActivity implements
                 break;
         }
     }
+
+    @Override
+    public boolean onMarkerClick(Marker marker, MapView mapView) {
+        markerClick.checkMarker(marker);
+        return false;
+    }
+
+    @Override
+    public void onConnectionSuccess(Channel channel) {
+        indicator.hide();
+    }
+
+    @Override
+    public void onConnectionFailure(String message) {
+        Log.i(TAG, message);
+        indicator.hide();
+        if(isFirsInit)
+            CommonDialogs.showEndPointError(mContext);
+    }
+
+    @Override
+    public void onConnectionClosed(String message) {
+        Log.i(TAG, message);
+    }
+
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(mqConsumer.isConnected())
+            mqConsumer.stop();
+    }
+
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        isActivityPause = true;
+        if(mqConsumer.isConnected())
+            mqConsumer.stop();
+
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        isActivityPause = false;
+        connectToRabbit();
+    }
+
+
 }
