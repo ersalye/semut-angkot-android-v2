@@ -1,12 +1,15 @@
 package id.pptik.semutangkot;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +29,8 @@ import com.google.gson.Gson;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.rabbitmq.client.Channel;
 
+import net.grandcentrix.tray.core.ItemNotFoundException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,16 +39,20 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
+import id.pptik.semutangkot.adapters.PathListAdapter;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
 import id.pptik.semutangkot.helper.map.osm.MarkerClick;
 import id.pptik.semutangkot.helper.map.osm.OSMarkerAnimation;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
+import id.pptik.semutangkot.models.AngkotPath;
 import id.pptik.semutangkot.models.Cctv;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.models.RequestStatus;
@@ -90,6 +99,7 @@ public class MapActivity extends AppCompatActivity implements
     private static final int LAPORAN_OVERLAY_ORDER = 1;
     private static final int JALUR_OVERLAY_ORDER = 0;
     private boolean mqIsRunning = false;
+    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +110,9 @@ public class MapActivity extends AppCompatActivity implements
         StrictMode.setThreadPolicy(policy);
 
         mMarkerDetailLayout = findViewById(R.id.markerdetail_layout);
+        mRecyclerView = findViewById(R.id.path_recycleview);
+
+
         mClosePopup = findViewById(R.id.close_popup);
         mClosePopup.setImageDrawable(
                 CustomDrawable.googleMaterial(
@@ -144,8 +157,38 @@ public class MapActivity extends AppCompatActivity implements
 
         setupMap();
         setFilterLayout();
+        setPathList();
     }
 
+
+    private void setPathList(){
+        List<AngkotPath> pathList = new ArrayList<>();
+        try {
+            JSONArray array = new JSONArray(appPreferences.getString(AppPreferences.KEY_STORE_ANGKOT_PATH));
+            for(int i = 0; i < array.length(); i++){
+                AngkotPath angkotPath = new Gson().fromJson(array.get(i).toString(), AngkotPath.class);
+                pathList.add(angkotPath);
+            }
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            mRecyclerView.setHasFixedSize(true);
+            mRecyclerView.setLayoutManager(linearLayoutManager);
+            mRecyclerView.clearFocus();
+            PathListAdapter adapter = new PathListAdapter(this, (view, position) -> {
+                indicator.show();
+                RequestRest.getPath(
+                        pathList.get(position).getTrayekRoute(),
+                        this
+                );
+            }, pathList);
+            //mRecyclerView.setVisibility(View.GONE);
+            mRecyclerView.setAdapter(adapter);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ItemNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void connectToRabbit() {
         mqFactory = new Factory(StringResources.get(R.string.MQ_HOSTNAME),
@@ -303,8 +346,13 @@ public class MapActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             case R.id.navigation_home:
                 filterDialog.show();
+                if(mRecyclerView.getVisibility() == View.VISIBLE)
+                    mRecyclerView.setVisibility(View.GONE);
                 return true;
             case R.id.navigation_dashboard:
+                if(mRecyclerView.getVisibility() == View.VISIBLE)
+                    mRecyclerView.setVisibility(View.GONE);
+                else mRecyclerView.setVisibility(View.VISIBLE);
 
                 return true;
             case R.id.navigation_notifications:
@@ -388,6 +436,53 @@ public class MapActivity extends AppCompatActivity implements
                         status.getMessage(),
                         status.getCode()
                 );
+                break;
+            case RequestRest.ENDPOINT_GET_PATH:
+                Log.i(TAG, jResult.toString());
+                mRecyclerView.setVisibility(View.GONE);
+                for(Overlay overlay : mapView.getOverlayManager().overlays()){
+                    if(overlay instanceof Polyline){
+                        mapView.getOverlayManager().overlays().remove(overlay);
+
+                    }
+                }
+                mapView.invalidate();
+                try {
+                    JSONArray nodeArray = jResult.getJSONObject("geojson")
+                            .getJSONObject("geometry").getJSONArray("coordinates")
+                            .getJSONArray(0);
+                    Polyline line = new Polyline();
+                    line.setWidth(20f);
+                    line.setColor(Color.parseColor("#85000000"));
+
+                    List<GeoPoint> pts = new ArrayList<>();
+                    for(int i = 0; i < nodeArray.length(); i++){
+                        GeoPoint point = new GeoPoint(
+                                nodeArray.getJSONArray(i).getDouble(1),
+                                nodeArray.getJSONArray(i).getDouble(0)
+                        );
+                        pts.add(point);
+                    }
+                    line.setPoints(pts);
+                    line.setGeodesic(true);
+                    mapView.getOverlayManager().add(JALUR_OVERLAY_ORDER, line);
+                    mapView.invalidate();
+                    for(Overlay overlay : mapView.getOverlayManager().overlays()){
+                        if(overlay instanceof Polyline){
+                            overlay.setEnabled(jalurVisible);
+
+                        }
+                    }
+                    if(jalurVisible) {
+                        mapView.getController().setZoom(19);
+                        mapView.getController().animateTo(line.getPoints().get(0));
+                    }
+                    mapView.invalidate();
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
     }
@@ -484,7 +579,13 @@ public class MapActivity extends AppCompatActivity implements
             case R.id.sw_jalur:
                 appPreferences.put(AppPreferences.KEY_SHOW_JALUR, b);
                 jalurVisible = b;
+                for(Overlay overlay : mapView.getOverlayManager().overlays()){
+                    if(overlay instanceof Polyline){
+                        overlay.setEnabled(b);
 
+                    }
+                }
+                mapView.invalidate();
                 break;
             case R.id.sw_laporan:
                 appPreferences.put(AppPreferences.KEY_SHOW_LAPORAN, b);

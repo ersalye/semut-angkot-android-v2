@@ -19,7 +19,14 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginBottom="?attr/actionBarSize" />
-
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/path_recycleview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:background="@drawable/gradient_trans"
+            android:layout_marginBottom="?attr/actionBarSize"
+            android:scrollbars="none" />
         <RelativeLayout
             android:background="@color/foregroundLoading"
             android:layout_width="match_parent"

@@ -19,6 +19,7 @@ public class RequestRest {
     public static final String ENDPOINT_CCTV = "cctv/bandung";
     public static final String ENDPOINT_ERROR = "endpoint.error";
     public static final String ENDPOINT_ANGKOT_PATH = "users/path";
+    public static final String ENDPOINT_GET_PATH = "endpoint.get.path";
 
     public RequestRest(){
 
@@ -101,6 +102,24 @@ public class RequestRest {
                     @Override
                     public void onResponse(JSONObject response) {
                         handler.onFinishRequest(response, ENDPOINT_ANGKOT_PATH);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+
+    public static void getPath(String url, RestResponHandler handler){
+        AndroidNetworking.get(url)
+                .setTag(ENDPOINT_GET_PATH)
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, ENDPOINT_GET_PATH);
                     }
                     @Override
                     public void onError(ANError error) {
