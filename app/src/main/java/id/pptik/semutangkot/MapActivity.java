@@ -14,9 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
 import com.github.hynra.gsonsharedpreferences.ParsingException;
@@ -27,9 +25,6 @@ import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.google.gson.Gson;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.rabbitmq.client.Channel;
-
-import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener;
-import net.grandcentrix.tray.core.TrayItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +38,6 @@ import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
@@ -89,6 +83,8 @@ public class MapActivity extends AppCompatActivity implements
     private boolean isActivityPause = false;
     private AppPreferences appPreferences;
     View customView;
+    BottomDialog filterDialog;
+    private boolean angkotVisible, cctvVisible, laporanVisible, jalurVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,9 +113,10 @@ public class MapActivity extends AppCompatActivity implements
 
         mContext = this;
         appPreferences = new AppPreferences(mContext);
-        appPreferences.registerOnTrayPreferenceChangeListener(items -> {
-
-        });
+        angkotVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true);
+        cctvVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true);
+        laporanVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true);
+        jalurVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true);
 
         markerAnimation = new OSMarkerAnimation();
         getSupportActionBar().hide();
@@ -197,9 +194,7 @@ public class MapActivity extends AppCompatActivity implements
                     markers[i].setIcon(getResources().getDrawable(R.drawable.tracker_angkot));
                     markers[i].setRelatedObject(angkots[i]);
                     markers[i].setOnMarkerClickListener(this);
-                    markers[i].setEnabled(
-                            appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true)
-                    );
+                    markers[i].setEnabled(angkotVisible);
                     mapView.getOverlays().add(markers[i]);
                     mapView.invalidate();
                 }
@@ -255,9 +250,7 @@ public class MapActivity extends AppCompatActivity implements
                         marker.setIcon(getResources().getDrawable(R.drawable.angkot_icon));
                         marker.setRelatedObject(angkotPosts[i]);
                         marker.setOnMarkerClickListener(this);
-                        marker.setEnabled(
-                                appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true)
-                        );
+                        marker.setEnabled(laporanVisible);
                         mapView.getOverlays().add(marker);
                         mapView.invalidate();
                     }
@@ -300,7 +293,7 @@ public class MapActivity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navigation_home:
-                showFilter();
+                filterDialog.show();
                 return true;
             case R.id.navigation_dashboard:
 
@@ -322,9 +315,7 @@ public class MapActivity extends AppCompatActivity implements
             marker.setIcon(getResources().getDrawable(R.drawable.cctv_icon));
             marker.setRelatedObject(cctvs.get(i));
             marker.setOnMarkerClickListener(this);
-            marker.setEnabled(
-                    appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true)
-            );
+            marker.setEnabled(cctvVisible);
             mapView.getOverlayManager().add(marker);
         }
         mapView.invalidate();
@@ -338,19 +329,17 @@ public class MapActivity extends AppCompatActivity implements
         SwitchCompat jalur = customView.findViewById(R.id.sw_jalur);
         SwitchCompat laporan = customView.findViewById(R.id.sw_laporan);
 
-        angkot.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true));
-        cctv.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true));
-        jalur.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true));
-        laporan.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true));
+        angkot.setChecked(angkotVisible);
+        cctv.setChecked(cctvVisible);
+        jalur.setChecked(jalurVisible);
+        laporan.setChecked(laporanVisible);
 
         angkot.setOnCheckedChangeListener(this);
         cctv.setOnCheckedChangeListener(this);
         jalur.setOnCheckedChangeListener(this);
         laporan.setOnCheckedChangeListener(this);
-    }
 
-    private void showFilter(){
-        BottomDialog bottomDialog = new BottomDialog.Builder(this)
+        filterDialog = new BottomDialog.Builder(this)
                 .setTitle("Filter Peta")
                 .setContent("Atur item mana yang ditampilkan di dalam peta")
                 .setCustomView(customView)
@@ -362,8 +351,8 @@ public class MapActivity extends AppCompatActivity implements
                 .setPositiveText("OK")
                 .onPositive(bottomDialog1 -> bottomDialog1.dismiss())
                 .build();
-        bottomDialog.show();
     }
+
 
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
@@ -442,7 +431,8 @@ public class MapActivity extends AppCompatActivity implements
     public void onResume(){
         super.onResume();
         isActivityPause = false;
-        connectToRabbit();
+        if(mqConsumer != null && !mqConsumer.isConnected() && angkotVisible)
+            connectToRabbit();
     }
 
 
@@ -451,6 +441,14 @@ public class MapActivity extends AppCompatActivity implements
         switch (compoundButton.getId()){
             case R.id.sw_angkot:
                 appPreferences.put(AppPreferences.KEY_SHOW_ANGKOT, b);
+                angkotVisible = b;
+                if(!b) {
+                    if (mqConsumer.isConnected()) mqConsumer.stop();
+                }
+                else {
+                        connectToRabbit();
+                        Log.i(TAG, "hollyshiiit");
+                    }
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
                         if(((Marker) overlay).getRelatedObject() instanceof  Angkot){
@@ -462,6 +460,7 @@ public class MapActivity extends AppCompatActivity implements
                 break;
             case R.id.sw_cctv:
                 appPreferences.put(AppPreferences.KEY_SHOW_CCTV, b);
+                cctvVisible = b;
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
                         if(((Marker) overlay).getRelatedObject() instanceof  Cctv){
@@ -473,10 +472,12 @@ public class MapActivity extends AppCompatActivity implements
                 break;
             case R.id.sw_jalur:
                 appPreferences.put(AppPreferences.KEY_SHOW_JALUR, b);
+                jalurVisible = b;
 
                 break;
             case R.id.sw_laporan:
                 appPreferences.put(AppPreferences.KEY_SHOW_LAPORAN, b);
+                laporanVisible = b;
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
                         if(((Marker) overlay).getRelatedObject() instanceof  AngkotPost){
