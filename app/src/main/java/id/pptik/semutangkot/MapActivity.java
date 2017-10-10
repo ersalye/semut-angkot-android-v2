@@ -7,10 +7,13 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -20,9 +23,13 @@ import com.github.hynra.gsonsharedpreferences.ParsingException;
 import com.github.hynra.wortel.BrokerCallback;
 import com.github.hynra.wortel.Consumer;
 import com.github.hynra.wortel.Factory;
+import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.google.gson.Gson;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.rabbitmq.client.Channel;
+
+import net.grandcentrix.tray.core.OnTrayPreferenceChangeListener;
+import net.grandcentrix.tray.core.TrayItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,7 +43,9 @@ import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 
+import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
 import id.pptik.semutangkot.helper.map.osm.MarkerClick;
 import id.pptik.semutangkot.helper.map.osm.OSMarkerAnimation;
@@ -55,7 +64,7 @@ import id.pptik.semutangkot.utils.StringResources;
 
 public class MapActivity extends AppCompatActivity implements
         BottomNavigationView.OnNavigationItemSelectedListener, RestResponHandler,
-        Marker.OnMarkerClickListener, BrokerCallback {
+        Marker.OnMarkerClickListener, BrokerCallback, CompoundButton.OnCheckedChangeListener {
 
 
 
@@ -78,6 +87,8 @@ public class MapActivity extends AppCompatActivity implements
     private FloatingActionButton mClosePopup;
     private Animation slideDown;
     private boolean isActivityPause = false;
+    private AppPreferences appPreferences;
+    View customView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +116,11 @@ public class MapActivity extends AppCompatActivity implements
 
 
         mContext = this;
+        appPreferences = new AppPreferences(mContext);
+        appPreferences.registerOnTrayPreferenceChangeListener(items -> {
+
+        });
+
         markerAnimation = new OSMarkerAnimation();
         getSupportActionBar().hide();
         indicator = new LoadingIndicator(mContext);
@@ -122,6 +138,7 @@ public class MapActivity extends AppCompatActivity implements
         navigation.setOnNavigationItemSelectedListener(this);
 
         setupMap();
+        setFilterLayout();
     }
 
 
@@ -180,6 +197,9 @@ public class MapActivity extends AppCompatActivity implements
                     markers[i].setIcon(getResources().getDrawable(R.drawable.tracker_angkot));
                     markers[i].setRelatedObject(angkots[i]);
                     markers[i].setOnMarkerClickListener(this);
+                    markers[i].setEnabled(
+                            appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true)
+                    );
                     mapView.getOverlays().add(markers[i]);
                     mapView.invalidate();
                 }
@@ -235,6 +255,9 @@ public class MapActivity extends AppCompatActivity implements
                         marker.setIcon(getResources().getDrawable(R.drawable.angkot_icon));
                         marker.setRelatedObject(angkotPosts[i]);
                         marker.setOnMarkerClickListener(this);
+                        marker.setEnabled(
+                                appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true)
+                        );
                         mapView.getOverlays().add(marker);
                         mapView.invalidate();
                     }
@@ -270,13 +293,14 @@ public class MapActivity extends AppCompatActivity implements
         mapView.getController().animateTo(g1);
         marker.setPosition(g1);
         mapView.invalidate();
+
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navigation_home:
-
+                showFilter();
                 return true;
             case R.id.navigation_dashboard:
 
@@ -298,11 +322,48 @@ public class MapActivity extends AppCompatActivity implements
             marker.setIcon(getResources().getDrawable(R.drawable.cctv_icon));
             marker.setRelatedObject(cctvs.get(i));
             marker.setOnMarkerClickListener(this);
+            marker.setEnabled(
+                    appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true)
+            );
             mapView.getOverlayManager().add(marker);
         }
         mapView.invalidate();
     }
 
+    private void setFilterLayout(){
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        customView = inflater.inflate(R.layout.layout_filter, null);
+        SwitchCompat angkot = customView.findViewById(R.id.sw_angkot);
+        SwitchCompat cctv = customView.findViewById(R.id.sw_cctv);
+        SwitchCompat jalur = customView.findViewById(R.id.sw_jalur);
+        SwitchCompat laporan = customView.findViewById(R.id.sw_laporan);
+
+        angkot.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true));
+        cctv.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true));
+        jalur.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true));
+        laporan.setChecked(appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true));
+
+        angkot.setOnCheckedChangeListener(this);
+        cctv.setOnCheckedChangeListener(this);
+        jalur.setOnCheckedChangeListener(this);
+        laporan.setOnCheckedChangeListener(this);
+    }
+
+    private void showFilter(){
+        BottomDialog bottomDialog = new BottomDialog.Builder(this)
+                .setTitle("Filter Peta")
+                .setContent("Atur item mana yang ditampilkan di dalam peta")
+                .setCustomView(customView)
+                .setIcon(CustomDrawable.googleMaterial(
+                        this,
+                        GoogleMaterial.Icon.gmd_widgets,
+                        46, R.color.colorPrimary
+                ))
+                .setPositiveText("OK")
+                .onPositive(bottomDialog1 -> bottomDialog1.dismiss())
+                .build();
+        bottomDialog.show();
+    }
 
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
@@ -385,4 +446,45 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        switch (compoundButton.getId()){
+            case R.id.sw_angkot:
+                appPreferences.put(AppPreferences.KEY_SHOW_ANGKOT, b);
+                for(Overlay overlay : mapView.getOverlays()){
+                    if(overlay instanceof Marker){
+                        if(((Marker) overlay).getRelatedObject() instanceof  Angkot){
+                            overlay.setEnabled(b);
+                        }
+                    }
+                }
+                mapView.invalidate();
+                break;
+            case R.id.sw_cctv:
+                appPreferences.put(AppPreferences.KEY_SHOW_CCTV, b);
+                for(Overlay overlay : mapView.getOverlays()){
+                    if(overlay instanceof Marker){
+                        if(((Marker) overlay).getRelatedObject() instanceof  Cctv){
+                            overlay.setEnabled(b);
+                        }
+                    }
+                }
+                mapView.invalidate();
+                break;
+            case R.id.sw_jalur:
+                appPreferences.put(AppPreferences.KEY_SHOW_JALUR, b);
+
+                break;
+            case R.id.sw_laporan:
+                appPreferences.put(AppPreferences.KEY_SHOW_LAPORAN, b);
+                for(Overlay overlay : mapView.getOverlays()){
+                    if(overlay instanceof Marker){
+                        if(((Marker) overlay).getRelatedObject() instanceof  AngkotPost){
+                            overlay.setEnabled(b);
+                        }
+                    }
+                }
+                break;
+        }
+    }
 }
