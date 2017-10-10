@@ -6,9 +6,13 @@ import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+
 import id.pptik.semutangkot.R;
+import id.pptik.semutangkot.utils.CustomDrawable;
 
 
 public class WizardMediaFragment extends Fragment {
@@ -16,7 +20,7 @@ public class WizardMediaFragment extends Fragment {
     private static final String ARG_POSITION = "position";
 
     private int position;
-    private TextView icon;
+    private ImageView icon;
     private TextView title;
     private TextView text;
 
@@ -44,17 +48,32 @@ public class WizardMediaFragment extends Fragment {
         text = rootView.findViewById(R.id.fragment_wizard_media_text);
 
         if (position == 0) {
-            icon.setText(R.string.material_icon_star_outline);
-            title.setText("Fragment Example 1");
-            text.setText("Text for Fragment Example 1 " + getString(R.string.lorem_ipsum_short));
+            icon.setImageDrawable(CustomDrawable.googleMaterial(
+                    getActivity(),
+                    GoogleMaterial.Icon.gmd_map,
+                    110,
+                    R.color.cpb_white
+            ));
+            title.setText("Realtime Tracking");
+            text.setText("Pantau aktifitas Angkot, lihat secara Realtime lokasi Angkot yang tersedia");
         } else if (position == 1) {
-            icon.setText(R.string.material_icon_star_half);
-            title.setText("Fragment Example 2");
-            text.setText("Text for Fragment Example 2 " + getString(R.string.lorem_ipsum_short));
+            icon.setImageDrawable(CustomDrawable.googleMaterial(
+                    getActivity(),
+                    GoogleMaterial.Icon.gmd_videocam,
+                    110,
+                    R.color.cpb_white
+            ));
+            title.setText("Live CCTV");
+            text.setText("Pantau CCTV yang tersebar dibeberapa ruas jalan");
         } else {
-            icon.setText(R.string.material_icon_star);
-            title.setText("Fragment Example 3");
-            text.setText("Text for Fragment Example 3 " + getString(R.string.lorem_ipsum_short));
+            icon.setImageDrawable(CustomDrawable.googleMaterial(
+                    getActivity(),
+                    GoogleMaterial.Icon.gmd_directions,
+                    110,
+                    R.color.cpb_white
+            ));
+            title.setText("Rute Angkot");
+            text.setText("Lihat peta rute Angkot yang tersebar di sekitar Bandung");
         }
 
         ViewCompat.setElevation(rootView, 50);

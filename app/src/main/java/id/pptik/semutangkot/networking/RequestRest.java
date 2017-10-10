@@ -147,7 +147,7 @@ public class RequestRest {
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        handler.onFinishRequest(response, ENDPOINT_ANGKOT_PATH);
+                        handler.onFinishRequest(response, ENDPOINT_GET_PATH);
                     }
                     @Override
                     public void onError(ANError error) {

@@ -1,6 +1,5 @@
 package id.pptik.semutangkot.fragments.map;
 
-import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;

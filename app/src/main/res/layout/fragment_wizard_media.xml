@@ -18,17 +18,12 @@
         android:gravity="center"
         android:orientation="vertical" >
 
-        <id.pptik.semutangkot.ui.MaterialDesignIconsTextView
+        <ImageView
             android:id="@+id/fragment_wizard_media_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_margin="0dp"
-            android:layout_weight="0"
-            android:gravity="center"
-            android:padding="0dp"
-            android:text="@string/material_icon_cloud_univ_first"
-            android:textColor="@color/cpb_white"
-            android:textSize="110sp" />
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:src="@drawable/app_icon_plain"
+            />
 
         <TextView
             android:id="@+id/fragment_wizard_media_title"

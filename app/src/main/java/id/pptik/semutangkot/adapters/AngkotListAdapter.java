@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import id.pptik.semutangkot.R;
+import id.pptik.semutangkot.helper.TimeHelper;
 import id.pptik.semutangkot.models.AngkotPath;
 import id.pptik.semutangkot.models.angkot.Angkot;
 import id.pptik.semutangkot.models.mapview.Tracker;
@@ -50,13 +51,7 @@ public class AngkotListAdapter extends RecyclerView.Adapter<AngkotListAdapter.Vi
 
         String detail = "<b>Jurusan : </b>"+angkot.getAngkot().getTrayek().getNama();
         detail += "<br><b>Lokasi Tanggal : </b>"+angkot.getAngkot().getLastUpdate();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis() - 3600 * 10);
-        String dateNow = df.format(date);
-        String dateToCompare = angkot.getAngkot().getLastUpdate().replace('-', '/');
-        boolean isExpired = CompareDate.compare(dateToCompare, dateNow);
-        if(isExpired) detail += " <br> <b><font color='red'>LOKASI TIDAK UPDATE</font></b>";
-        else detail += " <br> <b><font color='blue'>LOKASI UPDATE</font></b>";
+        detail += " <br> <b><font color='blue'>"+ TimeHelper.getTimeAgo(angkot.getAngkot().getLastUpdate())+"</font></b>";
 
         holder.gpsNameText.setText(angkot.getAngkot().getPlatNomor());
         holder.gpsLocText.setText(angkot.getAngkot().getJumlahPenumpang().toString());

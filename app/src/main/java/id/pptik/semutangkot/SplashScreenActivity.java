@@ -17,6 +17,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.networking.RequestRest;
 import id.pptik.semutangkot.ui.CommonDialogs;
+import id.pptik.semutangkot.utils.CheckService;
 import wail.splacher.com.splasher.lib.SplasherActivity;
 import wail.splacher.com.splasher.models.SplasherConfig;
 import wail.splacher.com.splasher.utils.Const;
@@ -52,7 +53,10 @@ public class SplashScreenActivity extends SplasherActivity {
 
     @Override
     public void onSplasherFinished() {
-        checkPermission();
+        if (CheckService.isGpsEnabled(this)) {
+            checkPermission();
+        }else CommonDialogs.showError(this,
+                "Lokasi Anda tidak aktif. Aktifkan pengaturan lokasi Anda terlebih dahulu");
     }
 
 
