@@ -119,10 +119,12 @@ public class MapActivity extends AppCompatActivity implements
         mContext = this;
         appPreferences = new AppPreferences(mContext);
         angkotVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true);
-        if(angkotVisible && !mqIsRunning) connectToRabbit();
         cctvVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true);
         laporanVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true);
         jalurVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true);
+
+        if (!mqIsRunning && (angkotVisible || laporanVisible))
+            connectToRabbit();
 
         markerAnimation = new OSMarkerAnimation();
         getSupportActionBar().hide();
@@ -438,7 +440,7 @@ public class MapActivity extends AppCompatActivity implements
         super.onResume();
         isActivityPause = false;
         if(!isFirsInit) {
-            if (!mqIsRunning && angkotVisible)
+            if (!mqIsRunning && (angkotVisible || laporanVisible))
                 connectToRabbit();
         }
     }
@@ -457,7 +459,7 @@ public class MapActivity extends AppCompatActivity implements
                     if(!mqIsRunning)
                         connectToRabbit();
 
-                    }
+                }
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
                         if(((Marker) overlay).getRelatedObject() instanceof  Angkot){
@@ -487,6 +489,14 @@ public class MapActivity extends AppCompatActivity implements
             case R.id.sw_laporan:
                 appPreferences.put(AppPreferences.KEY_SHOW_LAPORAN, b);
                 laporanVisible = b;
+                if(!b) {
+                    if (mqIsRunning) mqConsumer.stop();
+                }
+                else {
+                    if(!mqIsRunning)
+                        connectToRabbit();
+
+                }
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
                         if(((Marker) overlay).getRelatedObject() instanceof  AngkotPost){
