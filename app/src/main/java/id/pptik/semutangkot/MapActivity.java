@@ -428,6 +428,8 @@ public class MapActivity extends AppCompatActivity implements
         mapView = findViewById(R.id.mapview);
         mapView.setClickable(true);
         mapView.setBuiltInZoomControls(false);
+        mapView.setMultiTouchControls(true);
+        mapView.setMaxZoomLevel(20);
         mapView.getController().setZoom(15);
         mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         CompassOverlay compassOverlay = new CompassOverlay(this, mapView);

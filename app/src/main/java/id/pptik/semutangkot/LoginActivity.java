@@ -106,12 +106,17 @@ public class LoginActivity extends AppCompatActivity
         gPlusNetwork.setListener(this);
         gPlusNetwork.setSignInButton(mGoogleButton);
         mGoogleButton.setOnClickListener(view -> {
+
             if (!gPlusNetwork.isConnected()) {
                 gPlusNetwork.requestLogin(LoginActivity.this);
 
             }else {
                 Log.i(TAG, "Google not ready");
             }
+
+            // mock login
+            //loginToServer("103102743708049240037", "google", "103102743708049240037",
+            //"Hendra Permana", "hendrapermana.m@gmail.com");
         });
     }
 
@@ -155,8 +160,11 @@ public class LoginActivity extends AppCompatActivity
 
 
     private void loginToServer(String token, String strategy, String id, String name, String email){
+
+
         mIndicator.show();
         RequestRest.login(token, strategy, id, name, email, this);
+
     }
 
     private void populateAngkotPath(String token){
