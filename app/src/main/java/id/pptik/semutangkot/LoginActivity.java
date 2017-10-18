@@ -115,16 +115,16 @@ public class LoginActivity extends AppCompatActivity
         gPlusNetwork.setSignInButton(mGoogleButton);
         mGoogleButton.setOnClickListener(view -> {
 
-            if (!gPlusNetwork.isConnected()) {
+            /*if (!gPlusNetwork.isConnected()) {
                 gPlusNetwork.requestLogin(LoginActivity.this);
 
             }else {
                 Log.i(TAG, "Google not ready");
-            }
+            }*/
 
             // mock login
-            //loginToServer("103102743708049240037", "google", "103102743708049240037",
-            //"Hendra Permana", "hendrapermana.m@gmail.com");
+            loginToServer("103102743708049240037", "google", "103102743708049240037",
+            "Hendra Permana", "hendrapermana.m@gmail.com");
         });
     }
 

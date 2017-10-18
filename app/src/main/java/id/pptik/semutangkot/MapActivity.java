@@ -61,6 +61,7 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -435,6 +436,9 @@ public class MapActivity extends AppCompatActivity implements
         CompassOverlay compassOverlay = new CompassOverlay(this, mapView);
         compassOverlay.enableCompass();
         mapView.getOverlays().add(compassOverlay);
+        RotationGestureOverlay rotationGestureOverlay= new RotationGestureOverlay(mapView);
+        rotationGestureOverlay.setEnabled(true);
+        mapView.getOverlays().add(rotationGestureOverlay);
         GeoPoint g1 = new GeoPoint(-6.885719, 107.613622);
         mapView.getController().animateTo(g1);
         mapView.invalidate();
@@ -571,7 +575,7 @@ public class MapActivity extends AppCompatActivity implements
                             .getJSONObject("geometry").getJSONArray("coordinates")
                             .getJSONArray(0);
                     Polyline line = new Polyline();
-                    line.setWidth(20f);
+                    line.setWidth(6.0f);
                     line.setColor(Color.parseColor("#85000000"));
 
                     List<GeoPoint> pts = new ArrayList<>();
@@ -584,7 +588,8 @@ public class MapActivity extends AppCompatActivity implements
                     }
                     line.setPoints(pts);
                     line.setGeodesic(true);
-                    mapView.getOverlayManager().add(line);
+                    //mapView.getOverlayManager().add(line);
+                    mapView.getOverlays().add(line);
                     mapView.invalidate();
                     for(Overlay overlay : mapView.getOverlayManager().overlays()){
                         if(overlay instanceof Polyline){
