@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.multidex.MultiDex;
 
 import com.androidnetworking.AndroidNetworking;
+import com.maksim88.easylogin.EasyLogin;
 
 
 public class App extends Application {
@@ -32,6 +33,7 @@ public class App extends Application {
         super.onCreate();
         sApplication = this;
         AndroidNetworking.initialize(this);
+        EasyLogin.initialize();
     }
 
 }

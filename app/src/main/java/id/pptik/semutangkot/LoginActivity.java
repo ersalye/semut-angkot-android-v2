@@ -24,6 +24,7 @@ import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void initSocialLogin() {
-        EasyLogin.initialize();
+
         easyLogin = EasyLogin.getInstance();
 
         mFbButton = findViewById(R.id.facebook_button);
@@ -94,14 +95,21 @@ public class LoginActivity extends AppCompatActivity
         mGoogleButton.setCompoundDrawables(googleIcon, null, null, null);
         List<String> fbScope = Arrays.asList("public_profile", "email");
 
-        if(!easyLogin.getInitializedSocialNetworks().contains(new FacebookNetwork(this, fbScope)))
+        ArrayList<String> connectedNetwork = new ArrayList<>();
+        for (SocialNetwork socialNetwork : easyLogin.getInitializedSocialNetworks()) {
+            Log.i("Social Login", socialNetwork.getNetwork().name());
+            connectedNetwork.add(socialNetwork.getNetwork().name());
+        }
+
+        if(!connectedNetwork.contains("FACEBOOK"))
             easyLogin.addSocialNetwork(new FacebookNetwork(this, fbScope));
+        if(!connectedNetwork.contains("GOOGLE_PLUS"))
+            easyLogin.addSocialNetwork(new GooglePlusNetwork(this));
 
         FacebookNetwork facebook = (FacebookNetwork) easyLogin.getSocialNetwork(SocialNetwork.Network.FACEBOOK);
         LoginButton fbLogin = findViewById(R.id.facebook_login_button);
         facebook.requestLogin(fbLogin, this);
         mFbButton.setOnClickListener(view -> fbLogin.performClick());
-        easyLogin.addSocialNetwork(new GooglePlusNetwork(this));
         gPlusNetwork = (GooglePlusNetwork) easyLogin.getSocialNetwork(SocialNetwork.Network.GOOGLE_PLUS);
         gPlusNetwork.setListener(this);
         gPlusNetwork.setSignInButton(mGoogleButton);

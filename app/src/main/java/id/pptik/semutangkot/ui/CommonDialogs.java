@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -97,10 +98,10 @@ public class CommonDialogs {
                 .setPositiveText("Keluar")
                 .onPositive(bottomDialog1 -> {
                     bottomDialog1.dismiss();
-                    EasyLogin.initialize();
                     EasyLogin easyLogin = EasyLogin.getInstance();
                     for (SocialNetwork socialNetwork : easyLogin.getInitializedSocialNetworks()) {
                         socialNetwork.logout();
+                        Log.i("Social Login", socialNetwork.getNetwork().name());
                     }
                     AppPreferences pref = new AppPreferences(context);
                     pref.put(AppPreferences.KEY_IS_LOGGED_IN, false);

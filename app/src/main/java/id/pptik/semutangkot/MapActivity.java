@@ -658,10 +658,11 @@ public class MapActivity extends AppCompatActivity implements
         popup.setOnMenuItemClickListener(item1 -> {
             switch (item1.getItemId()) {
                 case R.id.logout:
-                    EasyLogin.initialize();
+                //    EasyLogin.initialize();
                     EasyLogin easyLogin = EasyLogin.getInstance();
                     for (SocialNetwork socialNetwork : easyLogin.getInitializedSocialNetworks()) {
                         socialNetwork.logout();
+                        Log.i("Social Login", socialNetwork.getNetwork().name());
                     }
                     appPreferences.clear();
                     Intent intent = new Intent(mContext, WizardActivity.class);
@@ -806,9 +807,11 @@ public class MapActivity extends AppCompatActivity implements
         longitude = location.getLongitude();
         appPreferences.put(AppPreferences.KEY_MY_LATITUDE, (float) latitude);
         appPreferences.put(AppPreferences.KEY_MY_LONGITUDE, (float) longitude);
-        markerMyLocation.setRotation((float) MarkerBearing.bearing(markerMyLocation.getPosition().getLatitude(),
-                markerMyLocation.getPosition().getLongitude(), latitude, longitude));
-        markerAnimation.animate(mapView, markerMyLocation, new GeoPoint(latitude, longitude), 1500);
-        mapView.invalidate();
+        if(markerMyLocation != null) {
+            markerMyLocation.setRotation((float) MarkerBearing.bearing(markerMyLocation.getPosition().getLatitude(),
+                    markerMyLocation.getPosition().getLongitude(), latitude, longitude));
+            markerAnimation.animate(mapView, markerMyLocation, new GeoPoint(latitude, longitude), 1500);
+            mapView.invalidate();
+        }
     }
 }
