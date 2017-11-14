@@ -85,6 +85,7 @@ import id.pptik.semutangkot.ui.AnimationView;
 import id.pptik.semutangkot.ui.BottomNavigationViewHelper;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
+import id.pptik.semutangkot.ui.MainDrawer;
 import id.pptik.semutangkot.utils.CustomDrawable;
 import id.pptik.semutangkot.utils.StringResources;
 
@@ -132,12 +133,16 @@ public class MapActivity extends AppCompatActivity implements
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     BottomNavigationView navigation;
+    private MainDrawer drawer;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        drawer = new MainDrawer();
+        drawer.attach(MapActivity.this);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -449,7 +454,8 @@ public class MapActivity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navigation_profile:
-                showPopup(navigation);
+                //showPopup(navigation);
+                drawer.getMiniDrawer().getDrawer().openDrawer();
                 break;
             case R.id.navigation_filter:
                 filterDialog.show();
