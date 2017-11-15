@@ -62,6 +62,25 @@ public class CommonDialogs {
         bottomDialog.show();
     }
 
+
+    public static void showWarning(Context context, String content){
+        BottomDialog bottomDialog = new BottomDialog.Builder(context)
+                .setTitle("Ups! Gagal memuat permintaan")
+                .setContent(content)
+                .setIcon(CustomDrawable.googleMaterial(
+                        context,
+                        GoogleMaterial.Icon.gmd_do_not_disturb_off,
+                        46, R.color.colorPrimary
+                ))
+                .setPositiveText("OK")
+                .setCancelable(false)
+                .onPositive(bottomDialog1 -> {
+                    bottomDialog1.dismiss();
+                })
+                .build();
+        bottomDialog.show();
+    }
+
     public static void showRelateError(Context context, String content, String code){
         if(code.equals("009")){
             logout(context);

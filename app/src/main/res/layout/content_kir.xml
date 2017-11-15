@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="id.pptik.semutangkot.KirActivity"
+    tools:showIn="@layout/activity_kir">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                android:text="Pengecekan menggunakan :"
+                />
+                <co.ceryle.radiorealbutton.RadioRealButtonGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:rrbg_animateDrawables_enter="overshoot"
+                    app:rrbg_animateTexts_enter="overshoot"
+                    app:rrbg_dividerColor="@color/cpb_blue_dark"
+                    app:rrbg_dividerSize="1dp"
+                    app:rrbg_radius="5dp"
+                    android:padding="5dp"
+                    android:id="@+id/group_check"
+                    android:layout_margin="10dp"
+                    app:rrbg_selectorColor="@color/cpb_blue_dark"
+                    app:rrbg_selectorSize="3dp">
+
+                    <co.ceryle.radiorealbutton.RadioRealButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:rrb_drawableHeight="20dp"
+                        app:rrb_drawablePadding="8dp"
+                        app:rrb_drawableWidth="20dp"
+                        app:rrb_ripple="true"
+                        android:id="@+id/check_plat"
+                        app:rrb_checked="true"
+                        app:rrb_rippleColor="@color/cpb_blue_dark"
+                        app:rrb_text="Plat Nomor"
+                        app:rrb_textColor="@color/cpb_blue_dark"/>
+
+                    <co.ceryle.radiorealbutton.RadioRealButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:rrb_drawableGravity="right"
+                        app:rrb_drawableHeight="20dp"
+                        app:rrb_drawablePadding="8dp"
+                        android:id="@+id/no_check"
+                        app:rrb_drawableWidth="20dp"
+                        app:rrb_ripple="true"
+                        app:rrb_rippleColor="@color/cpb_blue_dark"
+                        app:rrb_text="Nomor Uji"
+
+                        app:rrb_textColor="@color/cpb_blue_dark"/>
+                </co.ceryle.radiorealbutton.RadioRealButtonGroup>
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_margin="10dp"
+                    android:layout_height="match_parent">
+                    <android.support.design.widget.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:id="@+id/nomor_edit"
+                        android:layout_height="wrap_content"
+                        android:hint="Nomor" />
+                </android.support.design.widget.TextInputLayout>
+
+                <Button
+                    android:layout_margin="10dp"
+                    android:textColor="@color/colorPrimary"
+                    android:layout_width="match_parent"
+                    android:id="@+id/check_button"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_full_round_primary"
+                    android:text="CHECK"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    style="@style/TextAppearance.AppCompat.Medium"
+                    android:id="@+id/detail_text"
+                    />
+        </LinearLayout>
+        </ScrollView>
+        <include layout="@layout/progress"/>
+    </RelativeLayout>
+</android.support.constraint.ConstraintLayout>

@@ -15,7 +15,7 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
 import id.pptik.semutangkot.models.Profile;
-import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.networking.CommonRest;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.utils.CheckService;
 import wail.splacher.com.splasher.lib.SplasherActivity;
@@ -99,13 +99,13 @@ public class SplashScreenActivity extends SplasherActivity {
                 if(isApprove){
                     try {
                         Profile profile = (Profile) new GSONSharedPreferences(SplashScreenActivity.this).getObject(new Profile());
-                        RequestRest.checkStatus(profile.getToken(), (jResult, type) -> {
+                        CommonRest.checkStatus(profile.getToken(), (jResult, type) -> {
 //                            Log.i(this.getClass().getSimpleName(), jResult.toString());
                             switch (type){
-                                case RequestRest.ENDPOINT_ERROR:
+                                case CommonRest.ENDPOINT_ERROR:
                                     CommonDialogs.showEndPointError(SplashScreenActivity.this);
                                     break;
-                                case RequestRest.ENDPOINT_STATUS:
+                                case CommonRest.ENDPOINT_STATUS:
                                     try {
                                         if(jResult.getBoolean("success")){
                                             // to main

@@ -1,6 +1,7 @@
 package id.pptik.semutangkot.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.view.GravityCompat;
 import android.view.View;
@@ -22,6 +23,7 @@ import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 
+import id.pptik.semutangkot.KirActivity;
 import id.pptik.semutangkot.R;
 
 public class MainDrawer {
@@ -47,8 +49,14 @@ public class MainDrawer {
                         new SecondaryDrawerItem().withName("Logout").withIcon(FontAwesome.Icon.faw_sign_out)
                 )
                 .withOnDrawerItemClickListener((view, position, drawerItem) -> {
-                    if (drawerItem instanceof Nameable) {
-                        Toast.makeText(context, ((Nameable) drawerItem).getName().getText(context), Toast.LENGTH_SHORT).show();
+                    switch ((int) drawerItem.getIdentifier()){
+                        case 1:
+                            //result.setSelection(1);
+                            break;
+                        case 2:
+                            context.startActivity(new Intent(context, KirActivity.class));
+                            //result.setSelection(1);
+                            break;
                     }
                     return false;
                 })

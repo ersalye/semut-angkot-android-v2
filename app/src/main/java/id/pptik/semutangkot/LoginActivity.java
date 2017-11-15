@@ -31,7 +31,7 @@ import java.util.List;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
-import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.networking.CommonRest;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
 import id.pptik.semutangkot.utils.CustomDrawable;
@@ -171,20 +171,20 @@ public class LoginActivity extends AppCompatActivity
 
 
         mIndicator.show();
-        RequestRest.login(token, strategy, id, name, email, this);
+        CommonRest.login(token, strategy, id, name, email, this);
 
     }
 
     private void populateAngkotPath(String token){
         mIndicator.show();
-        RequestRest.angkotPath(token, this);
+        CommonRest.angkotPath(token, this);
     }
 
     @Override
     public void onFinishRequest(JSONObject jResult, String type) {
         mIndicator.hide();
         switch (type){
-            case RequestRest.ENDPOINT_ANGKOT_PATH:
+            case CommonRest.ENDPOINT_ANGKOT_PATH:
                 try {
                     if(!jResult.getBoolean("success")){
                         CommonDialogs.showError(mContext, jResult.getString("message"));
@@ -197,7 +197,7 @@ public class LoginActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
-            case RequestRest.ENDPOINT_LOGIN:
+            case CommonRest.ENDPOINT_LOGIN:
                 Log.i(TAG, jResult.toString());
                 try {
                     if(!jResult.getBoolean("success")){
@@ -214,7 +214,7 @@ public class LoginActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
-            case RequestRest.ENDPOINT_ERROR:
+            case CommonRest.ENDPOINT_ERROR:
                 CommonDialogs.showEndPointError(mContext);
                 break;
         }

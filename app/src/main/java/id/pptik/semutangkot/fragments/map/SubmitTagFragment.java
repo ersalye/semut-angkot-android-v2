@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,21 +18,16 @@ import android.widget.Toast;
 
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
 import com.github.hynra.gsonsharedpreferences.ParsingException;
-import com.google.gson.Gson;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 
 import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.helper.AppPreferences;
-import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
-import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.networking.CommonRest;
 import id.pptik.semutangkot.ui.CommonDialogs;
 
 
@@ -107,13 +101,13 @@ public class SubmitTagFragment extends Fragment implements TextWatcher{
             GSONSharedPreferences g = new GSONSharedPreferences(context);
             try {
                 Profile profile = (Profile) g.getObject(new Profile());
-                RequestRest.createPost(
+                CommonRest.createPost(
                         profile.getToken(),
                         remarks.getText().toString(),
                         preferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0),
                         preferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0),
                         (jResult, type) -> {
-                            if(type.equals(RequestRest.ENDPOINT_CREATE_POST)) {
+                            if(type.equals(CommonRest.ENDPOINT_CREATE_POST)) {
                                 dialog.dismiss();
                                 try {
                                     if (jResult.getBoolean("success")) {

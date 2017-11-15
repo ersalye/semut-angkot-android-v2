@@ -12,7 +12,7 @@ import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.utils.StringResources;
 
-public class RequestRest {
+public class CommonRest {
 
     public static final String ENDPOINT_LOGIN = "users/login";
     public static final String ENDPOINT_STATUS = "users/status";
@@ -22,7 +22,7 @@ public class RequestRest {
     public static final String ENDPOINT_GET_PATH = "endpoint.get.path";
     public static final String ENDPOINT_CREATE_POST = "post/create";
 
-    public RequestRest(){
+    public CommonRest(){
 
     }
 
@@ -36,7 +36,7 @@ public class RequestRest {
                 .addBodyParameter("Name", name)
                 .addBodyParameter("Email", email)
                 .setTag(ENDPOINT_LOGIN)
-                .setPriority(Priority.HIGH)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
@@ -55,7 +55,7 @@ public class RequestRest {
         AndroidNetworking.post(endPoint+ ENDPOINT_STATUS)
                 .addBodyParameter("Token", token)
                 .setTag(ENDPOINT_STATUS)
-                .setPriority(Priority.HIGH)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
@@ -76,7 +76,7 @@ public class RequestRest {
         AndroidNetworking.post(endPoint+ ENDPOINT_CCTV)
                 .addBodyParameter("Token", token)
                 .setTag(ENDPOINT_STATUS)
-                .setPriority(Priority.HIGH)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
@@ -97,7 +97,7 @@ public class RequestRest {
         AndroidNetworking.post(endPoint+ ENDPOINT_ANGKOT_PATH)
                 .addBodyParameter("Token", token)
                 .setTag(ENDPOINT_STATUS)
-                .setPriority(Priority.HIGH)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
@@ -122,7 +122,7 @@ public class RequestRest {
                 .addBodyParameter("latitude", String.valueOf(lat))
                 .addBodyParameter("longitude", String.valueOf(lon))
                 .setTag(ENDPOINT_STATUS)
-                .setPriority(Priority.HIGH)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
@@ -142,7 +142,7 @@ public class RequestRest {
     public static void getPath(String url, RestResponHandler handler){
         AndroidNetworking.get(url)
                 .setTag(ENDPOINT_GET_PATH)
-                .setPriority(Priority.HIGH)
+                .setPriority(Priority.MEDIUM)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override

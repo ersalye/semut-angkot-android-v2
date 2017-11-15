@@ -54,7 +54,6 @@ import net.grandcentrix.tray.core.ItemNotFoundException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -71,6 +70,7 @@ import id.pptik.semutangkot.adapters.AngkotListAdapter;
 import id.pptik.semutangkot.adapters.PathListAdapter;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
+import id.pptik.semutangkot.helper.map.osm.GoogleMapProvider;
 import id.pptik.semutangkot.helper.map.osm.MarkerClick;
 import id.pptik.semutangkot.helper.map.osm.OSMarkerAnimation;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
@@ -80,7 +80,7 @@ import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.models.RequestStatus;
 import id.pptik.semutangkot.models.angkot.Angkot;
 import id.pptik.semutangkot.models.angkot.AngkotPost;
-import id.pptik.semutangkot.networking.RequestRest;
+import id.pptik.semutangkot.networking.CommonRest;
 import id.pptik.semutangkot.ui.AnimationView;
 import id.pptik.semutangkot.ui.BottomNavigationViewHelper;
 import id.pptik.semutangkot.ui.CommonDialogs;
@@ -268,7 +268,7 @@ public class MapActivity extends AppCompatActivity implements
             mPathRecyclerView.clearFocus();
             PathListAdapter adapter = new PathListAdapter(this, (view, position) -> {
                 indicator.show();
-                RequestRest.getPath(
+                CommonRest.getPath(
                         pathList.get(position).getTrayekRoute(),
                         this
                 );
@@ -426,7 +426,7 @@ public class MapActivity extends AppCompatActivity implements
 
     private void populateCctvData() {
         indicator.show();
-        RequestRest.bandungCctv(mProfile.getToken(), this);
+        CommonRest.bandungCctv(mProfile.getToken(), this);
 
     }
 
@@ -437,7 +437,10 @@ public class MapActivity extends AppCompatActivity implements
         mapView.setMultiTouchControls(true);
         mapView.setMaxZoomLevel(20);
         mapView.getController().setZoom(15);
-        mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+       // mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+        mapView.setTileSource(new GoogleMapProvider("GoogleMapStandart", GoogleMapProvider.STANDARD));
+      //  mapView.getTileProvider().setTileRequestCompleteHandler(new SimpleInvalidationHandler(mapView));
+
         CompassOverlay compassOverlay = new CompassOverlay(this, mapView);
         compassOverlay.enableCompass();
         mapView.getOverlays().add(compassOverlay);
@@ -544,10 +547,10 @@ public class MapActivity extends AppCompatActivity implements
     public void onFinishRequest(JSONObject jResult, String type) {
         indicator.hide();
         switch (type){
-            case RequestRest.ENDPOINT_ERROR:
+            case CommonRest.ENDPOINT_ERROR:
                 CommonDialogs.showEndPointError(mContext);
                 break;
-            case RequestRest.ENDPOINT_CCTV:
+            case CommonRest.ENDPOINT_CCTV:
                 RequestStatus status = new Gson().fromJson(jResult.toString(), RequestStatus.class);
                 if(status.getSuccess()){
                     try {
@@ -566,7 +569,7 @@ public class MapActivity extends AppCompatActivity implements
                         status.getCode()
                 );
                 break;
-            case RequestRest.ENDPOINT_GET_PATH:
+            case CommonRest.ENDPOINT_GET_PATH:
                 Log.i(TAG, jResult.toString());
                 mPathRecyclerView.setVisibility(View.GONE);
                 for(Overlay overlay : mapView.getOverlayManager().overlays()){
