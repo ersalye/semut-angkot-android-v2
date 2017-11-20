@@ -17,6 +17,8 @@ public class AppPreferences extends TrayPreferences {
     public static String KEY_MY_LATITUDE = "key.my.latitude";
     public static String KEY_MY_LONGITUDE = "key.my.longitude";
 
+    public static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_locaction_updates";
+
     public AppPreferences(Context context) {
         super(context, "App Module", 1);
     }
