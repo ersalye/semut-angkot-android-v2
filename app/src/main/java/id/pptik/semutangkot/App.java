@@ -5,7 +5,8 @@ import android.content.Context;
 import android.support.multidex.MultiDex;
 
 import com.androidnetworking.AndroidNetworking;
-import com.maksim88.easylogin.EasyLogin;
+
+import id.pptik.semutangkot.easylogin.EasyLogin;
 
 
 public class App extends Application {

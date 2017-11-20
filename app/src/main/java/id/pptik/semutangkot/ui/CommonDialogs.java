@@ -12,12 +12,12 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import com.github.javiersantos.bottomdialogs.BottomDialog;
-import com.maksim88.easylogin.EasyLogin;
-import com.maksim88.easylogin.networks.SocialNetwork;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 
 import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.WizardActivity;
+import id.pptik.semutangkot.easylogin.EasyLogin;
+import id.pptik.semutangkot.easylogin.networks.SocialNetwork;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.utils.CustomDrawable;
 

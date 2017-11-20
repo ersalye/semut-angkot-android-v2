@@ -43,8 +43,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
-import com.maksim88.easylogin.EasyLogin;
-import com.maksim88.easylogin.networks.SocialNetwork;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.rabbitmq.client.Channel;
@@ -68,6 +66,8 @@ import java.util.List;
 
 import id.pptik.semutangkot.adapters.AngkotListAdapter;
 import id.pptik.semutangkot.adapters.PathListAdapter;
+import id.pptik.semutangkot.easylogin.EasyLogin;
+import id.pptik.semutangkot.easylogin.networks.SocialNetwork;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
 import id.pptik.semutangkot.helper.map.osm.GoogleMapProvider;

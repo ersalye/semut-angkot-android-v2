@@ -12,12 +12,6 @@ import android.widget.Button;
 import com.facebook.login.widget.LoginButton;
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
 import com.google.gson.Gson;
-import com.maksim88.easylogin.AccessToken;
-import com.maksim88.easylogin.EasyLogin;
-import com.maksim88.easylogin.listener.OnLoginCompleteListener;
-import com.maksim88.easylogin.networks.FacebookNetwork;
-import com.maksim88.easylogin.networks.GooglePlusNetwork;
-import com.maksim88.easylogin.networks.SocialNetwork;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 
 
@@ -28,6 +22,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import id.pptik.semutangkot.easylogin.AccessToken;
+import id.pptik.semutangkot.easylogin.EasyLogin;
+import id.pptik.semutangkot.easylogin.listener.OnLoginCompleteListener;
+import id.pptik.semutangkot.easylogin.networks.FacebookNetwork;
+import id.pptik.semutangkot.easylogin.networks.GooglePlusNetwork;
+import id.pptik.semutangkot.easylogin.networks.SocialNetwork;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
@@ -49,6 +49,7 @@ public class LoginActivity extends AppCompatActivity
     private static final String TAG = LoginActivity.class.getSimpleName();
     private LoadingIndicator mIndicator;
     private AppPreferences appPreferences;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
