@@ -17,6 +17,12 @@ public class AppPreferences extends TrayPreferences {
     public static String KEY_MY_LATITUDE = "key.my.latitude";
     public static String KEY_MY_LONGITUDE = "key.my.longitude";
 
+    public static final String ACTION_BROADCAST_LOCATION = "action.broadcast.location";
+    public static final String INTENT_BROADCAST_TYPE = "intent.broadcast.type";
+    public static final String INTENT_BROADCAST_MSG = "intent.broadcast.msg";
+
+    public static final String BROADCAST_TYPE_LOCATION = "broadcast.type.location";
+
     public static final String KEY_REQUESTING_LOCATION_UPDATES = "requesting_locaction_updates";
 
     public AppPreferences(Context context) {

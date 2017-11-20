@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.location.Location;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -11,16 +12,17 @@ import android.os.Bundle;
 import android.util.Log;
 
 
+import id.pptik.semutangkot.helper.AppPreferences;
+import id.pptik.semutangkot.helper.BroadcastManager;
 import id.pptik.semutangkot.services.LocationUpdatesService;
 import id.pptik.semutangkot.utils.Utils;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements BroadcastManager.UIBroadcastListener{
     private static final String TAG = MainActivity.class.getSimpleName();
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
+    private BroadcastManager mBroadcastManager;
 
-
-    // Monitors the state of the connection to the service.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        mBroadcastManager = new BroadcastManager(this);
+        mBroadcastManager.subscribeToUi(this);
 
     }
 
@@ -86,5 +90,13 @@ public class MainActivity extends AppCompatActivity{
         }
 
         super.onStop();
+    }
+
+    @Override
+    public void onMessageReceived(String type, Object msg) {
+        if(type.equals(AppPreferences.BROADCAST_TYPE_LOCATION)){
+            Location location = (Location) msg;
+            Log.i(TAG, "Location Update "+location.getLatitude()+", "+location.getLongitude());
+        }
     }
 }

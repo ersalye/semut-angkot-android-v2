@@ -32,6 +32,8 @@ import java.util.Date;
 
 import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.WizardActivity;
+import id.pptik.semutangkot.helper.AppPreferences;
+import id.pptik.semutangkot.helper.BroadcastManager;
 import id.pptik.semutangkot.utils.Logger;
 import id.pptik.semutangkot.utils.Utils;
 
@@ -41,9 +43,6 @@ public class LocationUpdatesService extends Service {
 
     private static final String TAG = LocationUpdatesService.class.getSimpleName();
 
-    static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-
-    static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
     private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
             ".started_from_notification";
 
@@ -70,7 +69,7 @@ public class LocationUpdatesService extends Service {
 
     private Location mLocation;
 
-    Logger logger;
+    private BroadcastManager broadcastManager;
 
     public LocationUpdatesService() {
     }
@@ -78,6 +77,8 @@ public class LocationUpdatesService extends Service {
     @Override
     public void onCreate() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        broadcastManager = new BroadcastManager(this);
 
         mLocationCallback = new LocationCallback() {
             @Override
@@ -227,16 +228,11 @@ public class LocationUpdatesService extends Service {
 
     private void onNewLocation(Location location) {
         Log.i(TAG, "New location: " + location);
-    //    logger.addRecordToLog(new Date().toString()+" : "+location );
-
         mLocation = location;
 
-        /*
-        Intent intent = new Intent(ACTION_BROADCAST);
-        intent.putExtra(EXTRA_LOCATION, location);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent); */
-
-        // Update notification content if running as a foreground service.
+        broadcastManager.sendBroadcastToUI(AppPreferences.BROADCAST_TYPE_LOCATION,
+                location
+        );
         if (serviceIsRunningInForeground(this)) {
             mNotificationManager.notify(NOTIFICATION_ID, getNotification());
         }
