@@ -250,7 +250,7 @@ public class LocationUpdatesService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        LocationUpdatesService getService() {
+        public LocationUpdatesService getService() {
             return LocationUpdatesService.this;
         }
     }

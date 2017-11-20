@@ -1,7 +1,11 @@
 package id.pptik.semutangkot;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import com.daimajia.androidanimations.library.Techniques;
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
@@ -14,8 +18,10 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
+import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.networking.CommonRest;
+import id.pptik.semutangkot.services.LocationUpdatesService;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.utils.CheckService;
 import wail.splacher.com.splasher.lib.SplasherActivity;
@@ -31,6 +37,29 @@ import java.util.List;
 public class SplashScreenActivity extends SplasherActivity {
 
     private boolean isApprove = false;
+    private static final String TAG = SplashScreenActivity.class.getSimpleName();
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    private LocationUpdatesService mService = null;
+    private boolean mBound = false;
+
+    private AppPreferences preferences;
+
+
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mService = null;
+            mBound = false;
+        }
+    };
 
     @Override
     public void initSplasher(SplasherConfig config) {
@@ -53,6 +82,7 @@ public class SplashScreenActivity extends SplasherActivity {
 
     @Override
     public void onSplasherFinished() {
+        preferences = new AppPreferences(getApplicationContext());
         if (CheckService.isGpsEnabled(this)) {
             checkPermission();
         }else CommonDialogs.showError(this,
@@ -109,11 +139,13 @@ public class SplashScreenActivity extends SplasherActivity {
                                     try {
                                         if(jResult.getBoolean("success")){
                                             // to main
-                                            startActivity(new Intent(
-                                                    SplashScreenActivity.this,
-                                                    MapActivity.class
-                                            ));
-                                            finish();
+                                         // active location
+                                            launchLocationService();
+                                        //    startActivity(new Intent(
+                                        //            SplashScreenActivity.this,
+                                        //            MapActivity.class
+                                        //    ));
+                                        //    finish();
                                         }else {
                                             CommonDialogs.showRelateError(
                                                     SplashScreenActivity.this,
@@ -141,6 +173,13 @@ public class SplashScreenActivity extends SplasherActivity {
         }).check();
     }
 
+    private void launchLocationService(){
+        //bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
+          //      Context.BIND_AUTO_CREATE);
+        if(!preferences.getBoolean(AppPreferences.KEY_REQUESTING_LOCATION_UPDATES, false)){
+            mService.requestLocationUpdates();
+        }
+    }
 
     public void showPermissionRationale(final PermissionToken token) {
         new AlertDialog.Builder(this).setTitle("Persetujuan Dibutuhkan")
