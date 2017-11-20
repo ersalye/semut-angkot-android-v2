@@ -204,5 +204,6 @@
     <string name="title_notifications">Notifications</string>
     <string name="location_updated">Lokasi Update</string>
     <string name="title_activity_kir">Cek KIR</string>
+    <string name="title_activity_main">Semut App</string>
 
 </resources>

@@ -38,28 +38,9 @@ public class SplashScreenActivity extends SplasherActivity {
 
     private boolean isApprove = false;
     private static final String TAG = SplashScreenActivity.class.getSimpleName();
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
-    private LocationUpdatesService mService = null;
-    private boolean mBound = false;
 
     private AppPreferences preferences;
 
-
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
-            mService = binder.getService();
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mService = null;
-            mBound = false;
-        }
-    };
 
     @Override
     public void initSplasher(SplasherConfig config) {
@@ -140,12 +121,12 @@ public class SplashScreenActivity extends SplasherActivity {
                                         if(jResult.getBoolean("success")){
                                             // to main
                                          // active location
-                                            launchLocationService();
-                                        //    startActivity(new Intent(
-                                        //            SplashScreenActivity.this,
-                                        //            MapActivity.class
-                                        //    ));
-                                        //    finish();
+
+                                            startActivity(new Intent(
+                                                    SplashScreenActivity.this,
+                                                    MainActivity.class
+                                            ));
+                                            finish();
                                         }else {
                                             CommonDialogs.showRelateError(
                                                     SplashScreenActivity.this,
@@ -171,26 +152,6 @@ public class SplashScreenActivity extends SplasherActivity {
             }
 
         }).check();
-    }
-
-    private void launchLocationService(){
-        bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
-                Context.BIND_AUTO_CREATE);
-        if(!preferences.getBoolean(AppPreferences.KEY_REQUESTING_LOCATION_UPDATES, false)){
-            mService.requestLocationUpdates();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        if (mBound) {
-            // Unbind from the service. This signals to the service that this activity is no longer
-            // in the foreground, and the service can respond by promoting itself to a foreground
-            // service.
-            unbindService(mServiceConnection);
-            mBound = false;
-        }
-        super.onStop();
     }
 
     public void showPermissionRationale(final PermissionToken token) {

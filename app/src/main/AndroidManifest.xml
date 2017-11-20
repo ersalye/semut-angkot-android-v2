@@ -59,6 +59,16 @@
         <activity
             android:name=".KirActivity"
             android:label="@string/title_activity_kir"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".services.LocationUpdatesService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

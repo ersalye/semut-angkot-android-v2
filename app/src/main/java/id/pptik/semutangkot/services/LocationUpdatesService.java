@@ -199,13 +199,13 @@ public class LocationUpdatesService extends Service {
                 new Intent(this, WizardActivity.class), 0);
 
         return new NotificationCompat.Builder(this)
-                .addAction(R.drawable.ic_home_black_24dp, getString(R.string.app_name),
+                .addAction(R.drawable.ic_home_black_24dp, "Buka Aplikasi",
                         activityPendingIntent)
-                .setContentText(text)
-                .setContentTitle(Utils.getLocationTitle(this))
+                .setContentText("Connected")
+                .setContentTitle("Semut App")
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.app_icon_plain)
                 .setTicker(text)
                 .setWhen(System.currentTimeMillis()).build();
     }
@@ -227,7 +227,7 @@ public class LocationUpdatesService extends Service {
 
     private void onNewLocation(Location location) {
         Log.i(TAG, "New location: " + location);
-        logger.addRecordToLog(new Date().toString()+" : "+location );
+    //    logger.addRecordToLog(new Date().toString()+" : "+location );
 
         mLocation = location;
 
