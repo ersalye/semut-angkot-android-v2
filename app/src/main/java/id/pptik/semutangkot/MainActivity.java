@@ -7,10 +7,24 @@ import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
+
+import com.goka.blurredgridmenu.GridMenu;
+import com.goka.blurredgridmenu.GridMenuFragment;
+import com.yarolegovich.slidingrootnav.SlidingRootNav;
+import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
+import com.yarolegovich.slidingrootnav.SlidingRootNavLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.BroadcastManager;
@@ -22,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
     private BroadcastManager mBroadcastManager;
+    private GridMenuFragment mGridMenuFragment;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -43,10 +58,58 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         mBroadcastManager = new BroadcastManager(this);
         mBroadcastManager.subscribeToUi(this);
 
+        mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_burn);
+
+
+
+        setupGridMenu();
+        FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
+        tx.replace(R.id.main_frame, mGridMenuFragment);
+        tx.commit();
+
+        mGridMenuFragment.setOnClickMenuListener((gridMenu, position) -> Toast.makeText(MainActivity.this, "Title:" + gridMenu.getTitle() + ", Position:" + position,
+                Toast.LENGTH_SHORT).show());
+
+        SlidingRootNav nav = new SlidingRootNavBuilder(this)
+                .withMenuLayout(R.layout.menu_left_drawer)
+                .withContentClickableWhenMenuOpened(true)
+                .withToolbarMenuToggle(toolbar)
+                .inject();
+
+        SlidingRootNavLayout navLay = nav.getLayout();
+        TextView test = navLay.findViewById(R.id.test);
+        test.setText("TEST");
+
+
+
     }
+
+
+
+    private void setupGridMenu() {
+        List<GridMenu> menus = new ArrayList<>();
+        menus.add(new GridMenu("Tracking Public Trans.", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("CCTV Viewer", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Cek KIR", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Booking Angkot", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Social Report", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Setting", R.drawable.common_full_open_on_phone));
+
+        mGridMenuFragment.setupMenu(menus);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(mBroadcastManager.isSubsribed())
+            mBroadcastManager.unSubscribeFromUi();
+    }
+
 
     @Override
     protected void onStart() {

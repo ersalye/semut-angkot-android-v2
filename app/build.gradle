@@ -46,7 +46,6 @@ dependencies {
     compile "com.mikepenz:iconics-core:2.9.3@aar"
     compile 'com.mikepenz:google-material-typeface:3.0.1.1.original@aar'
     compile 'com.mikepenz:fontawesome-typeface:4.7.0.1@aar'
-    // compile 'com.github.hynra:EasyLogin:11.6.1-y'
     compile 'com.facebook.android:facebook-android-sdk:4.24.0'
     compile 'com.google.android.gms:play-services-auth:11.6.0'
     compile 'com.amitshekhar.android:android-networking:1.0.0'
@@ -58,7 +57,7 @@ dependencies {
     compile 'com.github.hynra:wortel:0.0.1'
     compile 'org.osmdroid:osmdroid-android:5.6.5'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    //compile 'com.google.android.gms:play-services-location:10.2.6'
+    compile 'com.github.goka.blurredgridmenu:blurredgridmenu:1.0.2'
     compile 'com.google.android.gms:play-services-location:11.6.0'
     implementation("com.mikepenz:materialdrawer:6.0.1@aar") {
         transitive = true
@@ -66,6 +65,7 @@ dependencies {
     implementation 'com.mikepenz:crossfader:1.5.1@aar'
     implementation "com.mikepenz:crossfadedrawerlayout:1.0.1@aar"
     compile 'com.github.ceryle:RadioRealButton:v2.1.1'
+    compile 'com.yarolegovich:sliding-root-nav:1.1.0'
     testCompile 'junit:junit:4.12'
 }
 
