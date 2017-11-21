@@ -26,16 +26,14 @@ import com.yarolegovich.slidingrootnav.SlidingRootNavLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.BroadcastManager;
 import id.pptik.semutangkot.services.LocationUpdatesService;
 import id.pptik.semutangkot.utils.Utils;
 
-public class MainActivity extends AppCompatActivity implements BroadcastManager.UIBroadcastListener{
+public class MainActivity extends AppCompatActivity{
     private static final String TAG = MainActivity.class.getSimpleName();
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
-    private BroadcastManager mBroadcastManager;
     private GridMenuFragment mGridMenuFragment;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -60,8 +58,6 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
         setContentView(R.layout.activity_main2);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        mBroadcastManager = new BroadcastManager(this);
-        mBroadcastManager.subscribeToUi(this);
 
         mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_burn);
 
@@ -72,8 +68,13 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
         tx.replace(R.id.main_frame, mGridMenuFragment);
         tx.commit();
 
-        mGridMenuFragment.setOnClickMenuListener((gridMenu, position) -> Toast.makeText(MainActivity.this, "Title:" + gridMenu.getTitle() + ", Position:" + position,
-                Toast.LENGTH_SHORT).show());
+        mGridMenuFragment.setOnClickMenuListener((gridMenu, position) -> {
+            switch (position){
+                case 0:
+                    startActivity(new Intent(MainActivity.this, MapActivity.class));
+                    break;
+            }
+        });
 
         SlidingRootNav nav = new SlidingRootNavBuilder(this)
                 .withMenuLayout(R.layout.menu_left_drawer)
@@ -93,12 +94,12 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
 
     private void setupGridMenu() {
         List<GridMenu> menus = new ArrayList<>();
-        menus.add(new GridMenu("Tracking Public Trans.", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Public Trans.", R.drawable.common_full_open_on_phone));
         menus.add(new GridMenu("CCTV Viewer", R.drawable.common_full_open_on_phone));
         menus.add(new GridMenu("Cek KIR", R.drawable.common_full_open_on_phone));
         menus.add(new GridMenu("Booking Angkot", R.drawable.common_full_open_on_phone));
         menus.add(new GridMenu("Social Report", R.drawable.common_full_open_on_phone));
-        menus.add(new GridMenu("Setting", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Bike Community", R.drawable.common_full_open_on_phone));
 
         mGridMenuFragment.setupMenu(menus);
     }
@@ -106,8 +107,6 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
     @Override
     public void onDestroy(){
         super.onDestroy();
-        if(mBroadcastManager.isSubsribed())
-            mBroadcastManager.unSubscribeFromUi();
     }
 
 
@@ -153,13 +152,5 @@ public class MainActivity extends AppCompatActivity implements BroadcastManager.
         }
 
         super.onStop();
-    }
-
-    @Override
-    public void onMessageReceived(String type, Object msg) {
-        if(type.equals(AppPreferences.BROADCAST_TYPE_LOCATION)){
-            Location location = (Location) msg;
-            Log.i(TAG, "Location Update "+location.getLatitude()+", "+location.getLongitude());
-        }
     }
 }

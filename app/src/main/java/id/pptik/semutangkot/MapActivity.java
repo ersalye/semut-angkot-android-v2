@@ -1,22 +1,15 @@
 package id.pptik.semutangkot;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.IntentCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
@@ -28,7 +21,6 @@ import android.view.animation.Animation;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.Manifest;
 import android.widget.Toast;
 
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
@@ -37,11 +29,6 @@ import com.github.hynra.wortel.BrokerCallback;
 import com.github.hynra.wortel.Consumer;
 import com.github.hynra.wortel.Factory;
 import com.github.javiersantos.bottomdialogs.BottomDialog;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.iconics.IconicsDrawable;
@@ -66,9 +53,8 @@ import java.util.List;
 
 import id.pptik.semutangkot.adapters.AngkotListAdapter;
 import id.pptik.semutangkot.adapters.PathListAdapter;
-import id.pptik.semutangkot.easylogin.EasyLogin;
-import id.pptik.semutangkot.easylogin.networks.SocialNetwork;
 import id.pptik.semutangkot.helper.AppPreferences;
+import id.pptik.semutangkot.helper.BroadcastManager;
 import id.pptik.semutangkot.helper.map.MarkerBearing;
 import id.pptik.semutangkot.helper.map.osm.GoogleMapProvider;
 import id.pptik.semutangkot.helper.map.osm.MarkerClick;
@@ -91,9 +77,7 @@ import id.pptik.semutangkot.utils.StringResources;
 
 public class MapActivity extends AppCompatActivity implements
         BottomNavigationView.OnNavigationItemSelectedListener, RestResponHandler,
-        Marker.OnMarkerClickListener, BrokerCallback, CompoundButton.OnCheckedChangeListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        Marker.OnMarkerClickListener, BrokerCallback, CompoundButton.OnCheckedChangeListener, BroadcastManager.UIBroadcastListener{
 
 
 
@@ -103,7 +87,6 @@ public class MapActivity extends AppCompatActivity implements
     private LoadingIndicator indicator;
     private GSONSharedPreferences gPrefs;
     private Profile mProfile;
-    private ArrayList<Cctv> cctvs = new ArrayList<>();
     private MarkerClick markerClick;
     private Factory mqFactory;
     private Consumer mqConsumer;
@@ -113,27 +96,23 @@ public class MapActivity extends AppCompatActivity implements
     private Angkot[] angkots;
     private Marker markerMyLocation;
     private OSMarkerAnimation markerAnimation;
-    private AngkotPost[] angkotPosts;
     private FloatingActionButton mClosePopup;
     private Animation slideDown;
     private boolean isActivityPause = false;
     private AppPreferences appPreferences;
     View customView;
     BottomDialog filterDialog;
-    private boolean angkotVisible, cctvVisible, laporanVisible, jalurVisible;
-  /*  private static final  int ANGKOT_OVERLAY_ORDER = 3;
-    private static final int CCTV_OVERLAY_ORDER = 2;
-    private static final int LAPORAN_OVERLAY_ORDER = 1;
-    private static final int JALUR_OVERLAY_ORDER = 0; */
+    private boolean angkotVisible, jalurVisible;
+
+    private boolean isConnected = false;
+
     private boolean mqIsRunning = false;
     private RecyclerView mPathRecyclerView, mListRecycleView;
     private AngkotListAdapter angkotListAdapter;
-    private ImageView addReportBtn, toMyLocBtn;
+    private ImageView toMyLocBtn;
     private double latitude, longitude, speed, altitude;
-    private LocationRequest mLocationRequest;
-    private GoogleApiClient mGoogleApiClient;
     BottomNavigationView navigation;
-    private MainDrawer drawer;
+    private BroadcastManager mBroadcastManager;
 
 
     @Override
@@ -141,19 +120,16 @@ public class MapActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        drawer = new MainDrawer();
-        drawer.attach(MapActivity.this);
-
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        mBroadcastManager = new BroadcastManager(this);
+        mBroadcastManager.subscribeToUi(this);
 
         mMarkerDetailLayout = findViewById(R.id.markerdetail_layout);
         mPathRecyclerView = findViewById(R.id.path_recycleview);
         mListRecycleView = findViewById(R.id.angkot_list_recycleview);
-        addReportBtn = findViewById(R.id.add_report_btn);
-        addReportBtn.setOnClickListener(view -> {
-            startActivity(new Intent(this, TagsActivity.class));
-        });
+
         toMyLocBtn = findViewById(R.id.myloc_btn);
         toMyLocBtn.setImageDrawable(CustomDrawable.googleMaterial(
                 this, GoogleMaterial.Icon.gmd_my_location,
@@ -163,12 +139,6 @@ public class MapActivity extends AppCompatActivity implements
             if(markerMyLocation != null)
                 mapView.getController().animateTo(markerMyLocation.getPosition());
         });
-
-        addReportBtn.setImageDrawable(CustomDrawable.googleMaterial(
-                this, GoogleMaterial.Icon.gmd_add,
-                24, R.color.cpb_white
-        ));
-
 
         mClosePopup = findViewById(R.id.close_popup);
         mClosePopup.setImageDrawable(
@@ -188,13 +158,10 @@ public class MapActivity extends AppCompatActivity implements
 
         mContext = this;
         appPreferences = new AppPreferences(mContext);
-        setLocationRequest();
         angkotVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true);
-        cctvVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true);
-        laporanVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true);
         jalurVisible = appPreferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true);
 
-        if (!mqIsRunning && (angkotVisible || laporanVisible))
+        if (!mqIsRunning && angkotVisible)
             connectToRabbit();
 
         markerAnimation = new OSMarkerAnimation();
@@ -209,7 +176,6 @@ public class MapActivity extends AppCompatActivity implements
 
         markerClick = new MarkerClick(mContext, mMarkerDetailLayout);
 
-        populateCctvData();
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
         BottomNavigationViewHelper.disableShiftMode(navigation);
@@ -237,21 +203,7 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
-    private void setLocationRequest() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        mLocationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10 * 1000)
-                .setFastestInterval(5 * 1000);
-        if (!mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.connect();
-        }
 
-    }
 
     private void setPathList(){
         List<AngkotPath> pathList = new ArrayList<>();
@@ -340,7 +292,6 @@ public class MapActivity extends AppCompatActivity implements
         try {
             JSONObject mainObject = new JSONObject(msg);
             JSONArray angkotArray = mainObject.getJSONArray("angkot");
-            JSONArray postArray = mainObject.getJSONArray("laporan");
             // angkot
             if(isFirsInit){
                 isFirsInit = false;
@@ -389,31 +340,7 @@ public class MapActivity extends AppCompatActivity implements
                     if(mListRecycleView.getVisibility() == View.VISIBLE)
                         updateAngkotFilterList();
 
-                    // post
-                    angkotPosts = new AngkotPost[postArray.length()];
-                    for(int i = 0; i < postArray.length(); i++){
-                        angkotPosts[i] = new Gson().fromJson(postArray.get(i).toString(), AngkotPost.class);
-                    }
-                    for(Overlay overlay : mapView.getOverlays()){
-                        if(overlay instanceof Marker){
-                            if(((Marker) overlay).getRelatedObject() instanceof  AngkotPost){
-                                mapView.getOverlays().remove(overlay);
-                                mapView.invalidate();
-                            }
-                        }
-                    }
-                    // add markers
-                    for(int i = 0; i < angkotPosts.length; i++){
-                        Marker marker = new Marker(mapView);
-                        marker.setPosition(new GeoPoint(angkotPosts[i].getLocation().getCoordinates().get(1),
-                                angkotPosts[i].getLocation().getCoordinates().get(0)));
-                        marker.setIcon(getResources().getDrawable(R.drawable.angkot_icon));
-                        marker.setRelatedObject(angkotPosts[i]);
-                        marker.setOnMarkerClickListener(this);
-                        marker.setEnabled(laporanVisible);
-                        mapView.getOverlays().add(marker);
-                        mapView.invalidate();
-                    }
+                    // tmb
                 }else {
                     // found new data
                     isFirsInit = true;
@@ -424,11 +351,6 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
-    private void populateCctvData() {
-        indicator.show();
-        CommonRest.bandungCctv(mProfile.getToken(), this);
-
-    }
 
     private void setupMap() {
         mapView = findViewById(R.id.mapview);
@@ -447,8 +369,17 @@ public class MapActivity extends AppCompatActivity implements
         RotationGestureOverlay rotationGestureOverlay= new RotationGestureOverlay(mapView);
         rotationGestureOverlay.setEnabled(true);
         mapView.getOverlays().add(rotationGestureOverlay);
-        GeoPoint g1 = new GeoPoint(-6.885719, 107.613622);
-        mapView.getController().animateTo(g1);
+
+        latitude = (appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0) == 0) ? -6.885719 :
+                appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0);
+        longitude = (appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0) == 0) ? -107.613622 :
+                appPreferences.getFloat(AppPreferences.KEY_MY_LONGITUDE, 0);
+
+
+        //GeoPoint g1 = new GeoPoint(-6.885719, 107.613622);
+        //mapView.getController().animateTo(g1);
+
+        onConnected(latitude, longitude);
         mapView.invalidate();
 
     }
@@ -458,7 +389,7 @@ public class MapActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             case R.id.navigation_profile:
                 //showPopup(navigation);
-                drawer.getMiniDrawer().getDrawer().openDrawer();
+
                 break;
             case R.id.navigation_filter:
                 filterDialog.show();
@@ -495,39 +426,18 @@ public class MapActivity extends AppCompatActivity implements
         return false;
     }
 
-    private void addCctvtoMap(){
-        for(int i = 0; i < cctvs.size(); i++){
-            Marker marker = new Marker(mapView);
-            marker.setPosition(new GeoPoint(
-                    cctvs.get(i).getLatitude(),
-                    cctvs.get(i).getLongitude()
-            ));
-            marker.setIcon(getResources().getDrawable(R.drawable.cctv_icon));
-            marker.setRelatedObject(cctvs.get(i));
-            marker.setOnMarkerClickListener(this);
-            marker.setEnabled(cctvVisible);
-            mapView.getOverlayManager().add(marker);
-        }
-        mapView.invalidate();
-    }
 
     private void setFilterLayout(){
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         customView = inflater.inflate(R.layout.layout_filter, null);
         SwitchCompat angkot = customView.findViewById(R.id.sw_angkot);
-        SwitchCompat cctv = customView.findViewById(R.id.sw_cctv);
         SwitchCompat jalur = customView.findViewById(R.id.sw_jalur);
-        SwitchCompat laporan = customView.findViewById(R.id.sw_laporan);
 
         angkot.setChecked(angkotVisible);
-        cctv.setChecked(cctvVisible);
         jalur.setChecked(jalurVisible);
-        laporan.setChecked(laporanVisible);
 
         angkot.setOnCheckedChangeListener(this);
-        cctv.setOnCheckedChangeListener(this);
         jalur.setOnCheckedChangeListener(this);
-        laporan.setOnCheckedChangeListener(this);
 
         filterDialog = new BottomDialog.Builder(this)
                 .setTitle("Filter Peta")
@@ -549,25 +459,6 @@ public class MapActivity extends AppCompatActivity implements
         switch (type){
             case CommonRest.ENDPOINT_ERROR:
                 CommonDialogs.showEndPointError(mContext);
-                break;
-            case CommonRest.ENDPOINT_CCTV:
-                RequestStatus status = new Gson().fromJson(jResult.toString(), RequestStatus.class);
-                if(status.getSuccess()){
-                    try {
-                        JSONArray array = jResult.getJSONArray("data");
-                        for(int i = 0; i < array.length(); i++){
-                            Cctv cctv = new Gson().fromJson(array.get(i).toString(), Cctv.class);
-                            cctvs.add(cctv);
-                        }
-                        addCctvtoMap();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }else CommonDialogs.showRelateError(
-                        mContext,
-                        status.getMessage(),
-                        status.getCode()
-                );
                 break;
             case CommonRest.ENDPOINT_GET_PATH:
                 Log.i(TAG, jResult.toString());
@@ -650,10 +541,8 @@ public class MapActivity extends AppCompatActivity implements
         super.onDestroy();
         if(mqIsRunning)
             mqConsumer.stop();
-        if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            mGoogleApiClient.disconnect();
-        }
+        if(mBroadcastManager.isSubsribed())
+            mBroadcastManager.unSubscribeFromUi();
     }
 
     @Override
@@ -666,38 +555,12 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
-    private void showPopup(View v){
-        PopupMenu popup = new PopupMenu(mContext, v);
-        popup.inflate(R.menu.menu_main);
-        popup.setOnMenuItemClickListener(item1 -> {
-            switch (item1.getItemId()) {
-                case R.id.logout:
-                //    EasyLogin.initialize();
-                    EasyLogin easyLogin = EasyLogin.getInstance();
-                    for (SocialNetwork socialNetwork : easyLogin.getInitializedSocialNetworks()) {
-                        socialNetwork.logout();
-                        Log.i("Social Login", socialNetwork.getNetwork().name());
-                    }
-                    appPreferences.clear();
-                    Intent intent = new Intent(mContext, WizardActivity.class);
-                    ComponentName cn = intent.getComponent();
-                    Intent mainIntent = IntentCompat.makeRestartActivityTask(cn);
-                    mContext.startActivity(mainIntent);
-                    finish();
-                    break;
-            }
-            return false;
-        });
-        //displaying the popup
-        popup.show();
-    }
-
     @Override
     public void onResume(){
         super.onResume();
         isActivityPause = false;
         if(!isFirsInit) {
-            if (!mqIsRunning && (angkotVisible || laporanVisible))
+            if (!mqIsRunning && angkotVisible)
                 connectToRabbit();
         }
     }
@@ -709,7 +572,7 @@ public class MapActivity extends AppCompatActivity implements
                 appPreferences.put(AppPreferences.KEY_SHOW_ANGKOT, b);
                 angkotVisible = b;
                 if(!b) {
-                    if (mqIsRunning && !laporanVisible) mqConsumer.stop();
+                    if (mqIsRunning) mqConsumer.stop();
                 }
                 else {
                     if(!mqIsRunning)
@@ -719,18 +582,6 @@ public class MapActivity extends AppCompatActivity implements
                 for(Overlay overlay : mapView.getOverlays()){
                     if(overlay instanceof Marker){
                         if(((Marker) overlay).getRelatedObject() instanceof  Angkot){
-                            overlay.setEnabled(b);
-                        }
-                    }
-                }
-                mapView.invalidate();
-                break;
-            case R.id.sw_cctv:
-                appPreferences.put(AppPreferences.KEY_SHOW_CCTV, b);
-                cctvVisible = b;
-                for(Overlay overlay : mapView.getOverlays()){
-                    if(overlay instanceof Marker){
-                        if(((Marker) overlay).getRelatedObject() instanceof  Cctv){
                             overlay.setEnabled(b);
                         }
                     }
@@ -748,75 +599,34 @@ public class MapActivity extends AppCompatActivity implements
                 }
                 mapView.invalidate();
                 break;
-            case R.id.sw_laporan:
-                appPreferences.put(AppPreferences.KEY_SHOW_LAPORAN, b);
-                laporanVisible = b;
-                if(!b) {
-                    if (mqIsRunning && !angkotVisible) mqConsumer.stop();
-                }
-                else {
-                    if(!mqIsRunning)
-                        connectToRabbit();
-
-                }
-                for(Overlay overlay : mapView.getOverlays()){
-                    if(overlay instanceof Marker){
-                        if(((Marker) overlay).getRelatedObject() instanceof  AngkotPost){
-                            overlay.setEnabled(b);
-                        }
-                    }
-                }
-                break;
         }
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Permission Denied");
-        }else {
-            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            Log.i(TAG, "LOCATION CONNECTED");
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            if (location == null) {
-                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-                Log.i(TAG, "location null");
 
-            } else {
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-                speed = location.getSpeed();
-                altitude = location.getAltitude();
-                appPreferences.put(AppPreferences.KEY_MY_LATITUDE, (float) latitude);
-                appPreferences.put(AppPreferences.KEY_MY_LONGITUDE, (float) longitude);
-                markerMyLocation = new Marker(mapView);
-                markerMyLocation.setPosition(new GeoPoint(latitude, longitude));
-                markerMyLocation.setIcon(
-                        CustomDrawable.googleMaterial(
-                                mContext,
-                                GoogleMaterial.Icon.gmd_navigation,
-                                20, R.color.colorPrimary
-                        )
-                );
-                mapView.getOverlayManager().add(markerMyLocation);
-                mapView.invalidate();
-                mapView.getController().animateTo(markerMyLocation.getPosition());
-            }
-        }
+    private void onConnected(double lat, double lon){
+        latitude = lat;
+        longitude = lon;
+        speed = 0;
+        altitude = 0;
+        appPreferences.put(AppPreferences.KEY_MY_LATITUDE, (float) latitude);
+        appPreferences.put(AppPreferences.KEY_MY_LONGITUDE, (float) longitude);
+        markerMyLocation = new Marker(mapView);
+        markerMyLocation.setPosition(new GeoPoint(latitude, longitude));
+        markerMyLocation.setIcon(
+                CustomDrawable.googleMaterial(
+                        mContext,
+                        GoogleMaterial.Icon.gmd_navigation,
+                        20, R.color.colorPrimary
+                )
+        );
+        mapView.getOverlayManager().add(markerMyLocation);
+        mapView.invalidate();
+        mapView.getController().animateTo(markerMyLocation.getPosition());
+        isConnected = true;
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
 
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
+    private void locationChanged(Location location){
         latitude = location.getLatitude();
         longitude = location.getLongitude();
         appPreferences.put(AppPreferences.KEY_MY_LATITUDE, (float) latitude);
@@ -826,6 +636,17 @@ public class MapActivity extends AppCompatActivity implements
                     markerMyLocation.getPosition().getLongitude(), latitude, longitude));
             markerAnimation.animate(mapView, markerMyLocation, new GeoPoint(latitude, longitude), 1500);
             mapView.invalidate();
+        }
+    }
+
+    @Override
+    public void onMessageReceived(String type, Object msg) {
+        if(type.equals(AppPreferences.BROADCAST_TYPE_LOCATION)){
+            Location location = (Location) msg;
+            Log.i(TAG, "Location Update "+location.getLatitude()+", "+location.getLongitude());
+            if(!isConnected)
+                onConnected(location.getLatitude(), location.getLongitude());
+            else locationChanged(location);
         }
     }
 }

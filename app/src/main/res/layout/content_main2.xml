@@ -16,10 +16,14 @@
             android:layout_width="match_parent"
             android:background="@color/cpb_blue_dark"
             android:id="@+id/ad_layout"
-            android:visibility="gone"
             android:orientation="vertical"
             android:layout_height="80dp">
-
+            <com.hanks.htextview.typer.TyperTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="this is init sentence."
+                app:charIncrease="3"
+                app:typerSpeed="80"/>
         </LinearLayout>
         <FrameLayout
             android:layout_below="@id/ad_layout"

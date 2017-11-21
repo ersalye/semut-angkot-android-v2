@@ -71,6 +71,8 @@ public class LocationUpdatesService extends Service {
 
     private BroadcastManager broadcastManager;
 
+    private AppPreferences mPreferences;
+
     public LocationUpdatesService() {
     }
 
@@ -79,6 +81,7 @@ public class LocationUpdatesService extends Service {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         broadcastManager = new BroadcastManager(this);
+        mPreferences = new AppPreferences(this);
 
         mLocationCallback = new LocationCallback() {
             @Override
@@ -230,9 +233,13 @@ public class LocationUpdatesService extends Service {
         Log.i(TAG, "New location: " + location);
         mLocation = location;
 
+        mPreferences.put(AppPreferences.KEY_MY_LATITUDE, (float) location.getLatitude());
+        mPreferences.put(AppPreferences.KEY_MY_LONGITUDE, (float) location.getLongitude());
+
         broadcastManager.sendBroadcastToUI(AppPreferences.BROADCAST_TYPE_LOCATION,
                 location
         );
+
         if (serviceIsRunningInForeground(this)) {
             mNotificationManager.notify(NOTIFICATION_ID, getNotification());
         }

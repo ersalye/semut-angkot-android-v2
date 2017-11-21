@@ -131,40 +131,4 @@ public class CommonDialogs {
                 .build();
         bottomDialog.show();
     }
-
-
-    public static void showFilter(Context context, AppPreferences preferences){
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View customView = inflater.inflate(R.layout.layout_filter, null);
-        SwitchCompat angkot = customView.findViewById(R.id.sw_angkot);
-        SwitchCompat cctv = customView.findViewById(R.id.sw_cctv);
-        SwitchCompat jalur = customView.findViewById(R.id.sw_jalur);
-        SwitchCompat laporan = customView.findViewById(R.id.sw_laporan);
-
-        angkot.setChecked(preferences.getBoolean(AppPreferences.KEY_SHOW_ANGKOT, true));
-        cctv.setChecked(preferences.getBoolean(AppPreferences.KEY_SHOW_CCTV, true));
-        jalur.setChecked(preferences.getBoolean(AppPreferences.KEY_SHOW_JALUR, true));
-        laporan.setChecked(preferences.getBoolean(AppPreferences.KEY_SHOW_LAPORAN, true));
-
-        angkot.setOnCheckedChangeListener((compoundButton, b) -> preferences.put(AppPreferences.KEY_SHOW_ANGKOT, b));
-        cctv.setOnCheckedChangeListener((compoundButton, b) -> preferences.put(AppPreferences.KEY_SHOW_CCTV, b));
-        jalur.setOnCheckedChangeListener((compoundButton, b) -> preferences.put(AppPreferences.KEY_SHOW_JALUR, b));
-        laporan.setOnCheckedChangeListener((compoundButton, b) -> preferences.put(AppPreferences.KEY_SHOW_LAPORAN, b));
-
-        BottomDialog bottomDialog = new BottomDialog.Builder(context)
-                .setTitle("Filter Peta")
-                .setContent("Atur item mana yang ditampilkan di dalam peta")
-                .setCustomView(customView)
-                .setIcon(CustomDrawable.googleMaterial(
-                        context,
-                        GoogleMaterial.Icon.gmd_sort,
-                        46, R.color.colorPrimary
-                ))
-                .setPositiveText("OK")
-                .onPositive(bottomDialog1 -> bottomDialog1.dismiss())
-                .build();
-        bottomDialog.show();
-    }
-
-
 }
