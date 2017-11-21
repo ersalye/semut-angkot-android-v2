@@ -4,46 +4,173 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_background_wizard_media"
     android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp">
+        <RelativeLayout
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_height="50dp"
+                android:id="@+id/app_icon"
+                android:src="@drawable/app_icon_plain"
+                />
+            <RelativeLayout
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@id/app_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_alignParentRight="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    android:text="SEMUT APP"
+                    android:fontFamily="@font/walkway"
+                    android:textStyle="bold"
+                    android:id="@+id/app_title"
+                    android:textColor="@color/white"
+                    />
 
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="90dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_below="@id/app_title"
+                    android:text="v1.0.4"
+                    android:textColor="@color/white_30_percent"
+                    android:textSize="9dp" />
+            </RelativeLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:paddingStart="24dp"
-        android:text="Balance"
-        android:textSize="12sp" />
-
+        </RelativeLayout>
+    </RelativeLayout>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:baselineAligned="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        >
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/profile_image"
+            android:layout_width="86dp"
+            android:layout_height="86dp"
+            android:src="@mipmap/ic_launcher_round"
+            android:layout_margin="10dp"
+            app:civ_border_width="2dp"
+            app:civ_border_color="@color/colorSemiDarkPrimary"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_accent_bold_round"
+            android:id="@+id/name_text"
+            android:text="Hendra Permana"
+            android:fontFamily="@font/walkway"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:textStyle="italic"
+            android:fontFamily="@font/roboto"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/cpb_white"
+            android:text="hendrapermana.m@gmail.com"
+            android:id="@+id/email_text"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_width="wrap_content"
         android:orientation="horizontal"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp">
-
+        android:gravity="center_vertical"
+        android:id="@+id/about_layout"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="24dp"
+            android:id="@+id/about_icon"
+            android:layout_height="24dp"
+            android:layout_marginRight="20dp"
+            android:src="@mipmap/ic_launcher_round"
+            />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Blah blah" />
-
+            android:text="ABOUT"
+            android:fontFamily="@font/roboto"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginLeft="10dp"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:id="@+id/setting_layout"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="24dp"
+            android:id="@+id/setting_icon"
+            android:layout_height="24dp"
+            android:layout_marginRight="20dp"
+            android:src="@mipmap/ic_launcher_round"
+            />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="20000"
-            android:id="@+id/test"
-            android:textSize="34sp" />
-
+            android:text="SETTINGS"
+            android:fontFamily="@font/roboto"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginLeft="10dp"
+            />
     </LinearLayout>
 
-    <Space
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="56dp" />
-
-
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:id="@+id/logout_layout"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="24dp"
+            android:id="@+id/logout_icon"
+            android:layout_height="24dp"
+            android:layout_marginRight="20dp"
+            android:src="@mipmap/ic_launcher_round"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LOGOUT"
+            android:fontFamily="@font/roboto"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginLeft="10dp"
+            />
+    </LinearLayout>
 </LinearLayout>

@@ -4,21 +4,23 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.location.Location;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 import com.goka.blurredgridmenu.GridMenu;
 import com.goka.blurredgridmenu.GridMenuFragment;
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
 import com.yarolegovich.slidingrootnav.SlidingRootNavLayout;
@@ -26,8 +28,11 @@ import com.yarolegovich.slidingrootnav.SlidingRootNavLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import id.pptik.semutangkot.helper.BroadcastManager;
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.services.LocationUpdatesService;
+import id.pptik.semutangkot.utils.CustomDrawable;
+import id.pptik.semutangkot.utils.ProfileUtils;
 import id.pptik.semutangkot.utils.Utils;
 
 public class MainActivity extends AppCompatActivity{
@@ -35,6 +40,7 @@ public class MainActivity extends AppCompatActivity{
     private LocationUpdatesService mService = null;
     private boolean mBound = false;
     private GridMenuFragment mGridMenuFragment;
+    Toolbar toolbar;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -56,7 +62,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_burn);
@@ -76,6 +82,11 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        setDrawer();
+    }
+
+
+    private void setDrawer(){
         SlidingRootNav nav = new SlidingRootNavBuilder(this)
                 .withMenuLayout(R.layout.menu_left_drawer)
                 .withContentClickableWhenMenuOpened(true)
@@ -83,10 +94,45 @@ public class MainActivity extends AppCompatActivity{
                 .inject();
 
         SlidingRootNavLayout navLay = nav.getLayout();
-        TextView test = navLay.findViewById(R.id.test);
-        test.setText("TEST");
+        CircleImageView profileImage = navLay.findViewById(R.id.profile_image);
+        profileImage.setImageDrawable(CustomDrawable.googleMaterial(
+                this, GoogleMaterial.Icon.gmd_account_circle,
+                96, R.color.primary_dark
+        ));
+        Profile profile = ProfileUtils.getProfile(this);
+        Picasso.with(this).load(profile.getProfile().getPicture()).into(profileImage);
 
+        String tmp = "<b>"+profile.getProfile().getDisplayName()+"</b>";
+        TextView displayName = navLay.findViewById(R.id.name_text);
+        displayName.setText(Html.fromHtml(tmp));
 
+        TextView emailText = navLay.findViewById(R.id.email_text);
+        emailText.setText(profile.getEmail());
+
+        ImageView settingIcon = navLay.findViewById(R.id.setting_icon);
+        ImageView logoutIcon = navLay.findViewById(R.id.logout_icon);
+        ImageView aboutIcon = navLay.findViewById(R.id.about_icon);
+
+        aboutIcon.setImageDrawable(CustomDrawable.googleMaterial(
+                this, GoogleMaterial.Icon.gmd_lightbulb_outline,
+                34, R.color.white
+        ));
+        settingIcon.setImageDrawable(CustomDrawable.googleMaterial(
+                this, GoogleMaterial.Icon.gmd_settings_applications,
+                34, R.color.white
+        ));
+        logoutIcon.setImageDrawable(CustomDrawable.googleMaterial(
+                this, GoogleMaterial.Icon.gmd_exit_to_app,
+                34, R.color.white
+        ));
+
+        navLay.findViewById(R.id.setting_layout).setOnClickListener(view -> {
+            // handle settings click
+        });
+
+        navLay.findViewById(R.id.logout_layout).setOnClickListener(view -> {
+            // handle logout click
+        });
 
     }
 

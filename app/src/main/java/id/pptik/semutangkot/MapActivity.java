@@ -38,6 +38,7 @@ import net.grandcentrix.tray.core.ItemNotFoundException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -297,8 +298,9 @@ public class MapActivity extends AppCompatActivity implements
                     angkotMarkers[i].setOnMarkerClickListener(this);
                     angkotMarkers[i].setEnabled(angkotVisible);
                     mapView.getOverlays().add(angkotMarkers[i]);
-                    mapView.invalidate();
+
                 }
+                mapView.invalidate();
                 setAngkotFilterList();
 
                 // tmb
@@ -314,8 +316,9 @@ public class MapActivity extends AppCompatActivity implements
                     tmbMarkers[i].setOnMarkerClickListener(this);
                     tmbMarkers[i].setEnabled(angkotVisible);
                     mapView.getOverlays().add(tmbMarkers[i]);
-                    mapView.invalidate();
+
                 }
+                mapView.invalidate();
 
             }else {
                 if (angkotArray.length() == angkots.length) {
@@ -340,6 +343,7 @@ public class MapActivity extends AppCompatActivity implements
                                 //    Log.i(TAG, "Same Position");
                                 }
                             }
+                            mapView.invalidate();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -368,6 +372,7 @@ public class MapActivity extends AppCompatActivity implements
                                 //    Log.i(TAG, "Same Position");
                                 }
                             }
+                            mapView.invalidate();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -392,16 +397,14 @@ public class MapActivity extends AppCompatActivity implements
         mapView.setMultiTouchControls(true);
         mapView.setMaxZoomLevel(20);
         mapView.getController().setZoom(15);
-       // mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-        mapView.setTileSource(new GoogleMapProvider("GoogleMapStandart", GoogleMapProvider.STANDARD));
+        mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+
+        // mapView.setTileSource(new GoogleMapProvider("GoogleMapStandart", GoogleMapProvider.STANDARD));
       //  mapView.getTileProvider().setTileRequestCompleteHandler(new SimpleInvalidationHandler(mapView));
 
         CompassOverlay compassOverlay = new CompassOverlay(this, mapView);
         compassOverlay.enableCompass();
         mapView.getOverlays().add(compassOverlay);
-     //   RotationGestureOverlay rotationGestureOverlay= new RotationGestureOverlay(mapView);
-     //   rotationGestureOverlay.setEnabled(true);
-     //   mapView.getOverlays().add(rotationGestureOverlay);
 
         latitude = (appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0) == 0) ? -6.885719 :
                 appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0);

@@ -22,6 +22,12 @@ public class TmbModel {
     @SerializedName("gpsdatetime")
     @Expose
     private String gpsdatetime;
+    @SerializedName("rawgpsdatetime")
+    @Expose
+    private String rawgpsdatetime;
+    @SerializedName("time")
+    @Expose
+    private String time;
     @SerializedName("location")
     @Expose
     private Location location;
@@ -31,6 +37,25 @@ public class TmbModel {
     @SerializedName("updated_at")
     @Expose
     private String updatedAt;
+
+
+
+    public String getRawgpsdatetime() {
+        return rawgpsdatetime;
+    }
+
+    public void setRawgpsdatetime(String rawgpsdatetime) {
+        this.rawgpsdatetime = rawgpsdatetime;
+    }
+
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
 
     public String getId() {
         return id;

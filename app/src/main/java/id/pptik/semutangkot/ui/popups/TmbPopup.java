@@ -46,7 +46,7 @@ public class TmbPopup {
         platText.setText(model.getBuscode());
 
         TextView timeDetail = customView.findViewById(R.id.time_detail);
-        String tmp = "<b>Lokasi Terakhir : </b>"+ NumUtils.convertMongoDateToAgo(model.getGpsdatetime());
+        String tmp = "<b>Lokasi Terakhir : </b>"+ TimeHelper.getTimeAgo(model.getRawgpsdatetime());
         timeDetail.setText(Html.fromHtml(tmp));
 
 
