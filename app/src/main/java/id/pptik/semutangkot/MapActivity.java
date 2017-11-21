@@ -24,7 +24,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.github.hynra.gsonsharedpreferences.GSONSharedPreferences;
-import com.github.hynra.gsonsharedpreferences.ParsingException;
 import com.github.hynra.wortel.BrokerCallback;
 import com.github.hynra.wortel.Consumer;
 import com.github.hynra.wortel.Factory;
@@ -61,17 +60,13 @@ import id.pptik.semutangkot.helper.map.osm.MarkerClick;
 import id.pptik.semutangkot.helper.map.osm.OSMarkerAnimation;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.AngkotPath;
-import id.pptik.semutangkot.models.Cctv;
-import id.pptik.semutangkot.models.Profile;
-import id.pptik.semutangkot.models.RequestStatus;
+import id.pptik.semutangkot.models.TmbModel;
 import id.pptik.semutangkot.models.angkot.Angkot;
-import id.pptik.semutangkot.models.angkot.AngkotPost;
 import id.pptik.semutangkot.networking.CommonRest;
 import id.pptik.semutangkot.ui.AnimationView;
 import id.pptik.semutangkot.ui.BottomNavigationViewHelper;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
-import id.pptik.semutangkot.ui.MainDrawer;
 import id.pptik.semutangkot.utils.CustomDrawable;
 import id.pptik.semutangkot.utils.StringResources;
 
@@ -86,14 +81,15 @@ public class MapActivity extends AppCompatActivity implements
     RelativeLayout mMarkerDetailLayout;
     private LoadingIndicator indicator;
     private GSONSharedPreferences gPrefs;
-    private Profile mProfile;
     private MarkerClick markerClick;
     private Factory mqFactory;
     private Consumer mqConsumer;
     private final String TAG = this.getClass().getSimpleName();
     private boolean isFirsInit = true;
-    private Marker[] markers;
+    private Marker[] angkotMarkers;
     private Angkot[] angkots;
+    private TmbModel[] tmbModels;
+    private Marker[] tmbMarkers;
     private Marker markerMyLocation;
     private OSMarkerAnimation markerAnimation;
     private FloatingActionButton mClosePopup;
@@ -167,12 +163,6 @@ public class MapActivity extends AppCompatActivity implements
         markerAnimation = new OSMarkerAnimation();
         getSupportActionBar().hide();
         indicator = new LoadingIndicator(mContext);
-        gPrefs = new GSONSharedPreferences(mContext);
-        try {
-            mProfile = (Profile) gPrefs.getObject(new Profile());
-        } catch (ParsingException e) {
-            e.printStackTrace();
-        }
 
         markerClick = new MarkerClick(mContext, mMarkerDetailLayout);
 
@@ -292,41 +282,60 @@ public class MapActivity extends AppCompatActivity implements
         try {
             JSONObject mainObject = new JSONObject(msg);
             JSONArray angkotArray = mainObject.getJSONArray("angkot");
+            JSONArray tmbArray = mainObject.getJSONArray("tmb");
             // angkot
             if(isFirsInit){
                 isFirsInit = false;
                 indicator.hide();
                 angkots = new Angkot[angkotArray.length()];
-                markers = new Marker[angkotArray.length()];
+                angkotMarkers = new Marker[angkotArray.length()];
                 for (int i = 0; i < angkotArray.length(); i++) {
                     angkots[i] = new Gson().fromJson(angkotArray.get(i).toString(), Angkot.class);
-                    markers[i] = new Marker(mapView);
-                    markers[i].setPosition(new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1),
+                    angkotMarkers[i] = new Marker(mapView);
+                    angkotMarkers[i].setPosition(new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1),
                             angkots[i].getAngkot().getLocation().getCoordinates().get(0)));
-                    markers[i].setIcon(getResources().getDrawable(R.drawable.tracker_angkot));
-                    markers[i].setRelatedObject(angkots[i]);
-                    markers[i].setOnMarkerClickListener(this);
-                    markers[i].setEnabled(angkotVisible);
-                    mapView.getOverlays().add(markers[i]);
+                    angkotMarkers[i].setIcon(getResources().getDrawable(R.drawable.tracker_angkot));
+                    angkotMarkers[i].setRelatedObject(angkots[i]);
+                    angkotMarkers[i].setOnMarkerClickListener(this);
+                    angkotMarkers[i].setEnabled(angkotVisible);
+                    mapView.getOverlays().add(angkotMarkers[i]);
                     mapView.invalidate();
                 }
                 setAngkotFilterList();
+
+                // tmb
+                tmbModels = new TmbModel[tmbArray.length()];
+                tmbMarkers = new Marker[tmbArray.length()];
+                for(int i = 0; i < tmbArray.length(); i++){
+                    tmbModels[i] = new Gson().fromJson(tmbArray.get(i).toString(), TmbModel.class);
+                    tmbMarkers[i] = new Marker(mapView);
+                    tmbMarkers[i].setPosition(new GeoPoint(tmbModels[i].getLocation().getCoordinates().get(1),
+                            tmbModels[i].getLocation().getCoordinates().get(0)));
+                    tmbMarkers[i].setIcon(getResources().getDrawable(R.drawable.tracker_angkot));
+                    tmbMarkers[i].setRelatedObject(tmbModels[i]);
+                    tmbMarkers[i].setOnMarkerClickListener(this);
+                    tmbMarkers[i].setEnabled(angkotVisible);
+                    mapView.getOverlays().add(tmbMarkers[i]);
+                    mapView.invalidate();
+                }
+
             }else {
                 if (angkotArray.length() == angkots.length) {
+                    /** animate angkot **/
                     for (int i = 0; i < angkotArray.length(); i++) {
                         JSONObject entity = null;
                         try {
                             entity = angkotArray.getJSONObject(i);
                             Angkot angkot = new Gson().fromJson(entity.toString(), Angkot.class);
-                            if (angkots[i].getAngkot().getPlatNomor().equals(angkot.getAngkot().getPlatNomor())) { // update markers
+                            if (angkots[i].getAngkot().getPlatNomor().equals(angkot.getAngkot().getPlatNomor())) { // update angkotMarkers
                                 angkots[i] = new Gson().fromJson(entity.toString(), Angkot.class);
-                                if (markers[i].getPosition().getLatitude() != angkots[i].getAngkot().getLocation().getCoordinates().get(1) ||
-                                        markers[i].getPosition().getLongitude() != angkots[i].getAngkot().getLocation().getCoordinates().get(0)) {
-                                    double bearing = MarkerBearing.bearing(markers[i].getPosition().getLatitude(), markers[i].getPosition().getLongitude(),
+                                if (angkotMarkers[i].getPosition().getLatitude() != angkots[i].getAngkot().getLocation().getCoordinates().get(1) ||
+                                        angkotMarkers[i].getPosition().getLongitude() != angkots[i].getAngkot().getLocation().getCoordinates().get(0)) {
+                                    double bearing = MarkerBearing.bearing(angkotMarkers[i].getPosition().getLatitude(), angkotMarkers[i].getPosition().getLongitude(),
                                             angkots[i].getAngkot().getLocation().getCoordinates().get(1), angkots[i].getAngkot().getLocation().getCoordinates().get(0));
-                                    markers[i].setRelatedObject(angkots[i]);
-                                    markers[i].setRotation((float) bearing);
-                                    markerAnimation.animate(mapView, markers[i],
+                                    angkotMarkers[i].setRelatedObject(angkots[i]);
+                                    angkotMarkers[i].setRotation((float) bearing);
+                                    markerAnimation.animate(mapView, angkotMarkers[i],
                                             new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1), angkots[i].getAngkot().getLocation().getCoordinates().get(0)),
                                             1500);
                                 } else {
@@ -340,7 +349,33 @@ public class MapActivity extends AppCompatActivity implements
                     if(mListRecycleView.getVisibility() == View.VISIBLE)
                         updateAngkotFilterList();
 
-                    // tmb
+                    /** animate tmb **/
+                    for (int i = 0; i < tmbArray.length(); i++) {
+                        JSONObject entity = null;
+                        try {
+                            entity = tmbArray.getJSONObject(i);
+                            TmbModel tmbModel = new Gson().fromJson(entity.toString(), TmbModel.class);
+                            if (tmbModels[i].getId().equals(tmbModel.getId())) { // update tmd markers
+                                tmbModels[i] = new Gson().fromJson(entity.toString(), TmbModel.class);
+                                if (tmbMarkers[i].getPosition().getLatitude() != tmbModels[i].getLocation().getCoordinates().get(1) ||
+                                        tmbMarkers[i].getPosition().getLongitude() != tmbModels[i].getLocation().getCoordinates().get(0)) {
+                                    double bearing = MarkerBearing.bearing(tmbMarkers[i].getPosition().getLatitude(), tmbMarkers[i].getPosition().getLongitude(),
+                                            tmbModels[i].getLocation().getCoordinates().get(1), tmbModels[i].getLocation().getCoordinates().get(0));
+                                    tmbMarkers[i].setRelatedObject(tmbModels[i]);
+                                    tmbMarkers[i].setRotation((float) bearing);
+                                    markerAnimation.animate(mapView, tmbMarkers[i],
+                                            new GeoPoint(tmbModels[i].getLocation().getCoordinates().get(1), tmbModels[i].getLocation().getCoordinates().get(0)),
+                                            1500);
+                                } else {
+                                    Log.i(TAG, "Same Position");
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
                 }else {
                     // found new data
                     isFirsInit = true;
