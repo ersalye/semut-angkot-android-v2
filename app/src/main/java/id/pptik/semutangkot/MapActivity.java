@@ -45,6 +45,7 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import id.pptik.semutangkot.ui.AnimationView;
 import id.pptik.semutangkot.ui.BottomNavigationViewHelper;
 import id.pptik.semutangkot.ui.CommonDialogs;
 import id.pptik.semutangkot.ui.LoadingIndicator;
+import id.pptik.semutangkot.ui.popups.CheckPopup;
 import id.pptik.semutangkot.utils.CustomDrawable;
 import id.pptik.semutangkot.utils.StringResources;
 
@@ -80,8 +82,6 @@ public class MapActivity extends AppCompatActivity implements
     private MapView mapView;
     RelativeLayout mMarkerDetailLayout;
     private LoadingIndicator indicator;
-    private GSONSharedPreferences gPrefs;
-    private MarkerClick markerClick;
     private Factory mqFactory;
     private Consumer mqConsumer;
     private final String TAG = this.getClass().getSimpleName();
@@ -163,8 +163,6 @@ public class MapActivity extends AppCompatActivity implements
         markerAnimation = new OSMarkerAnimation();
         getSupportActionBar().hide();
         indicator = new LoadingIndicator(mContext);
-
-        markerClick = new MarkerClick(mContext, mMarkerDetailLayout);
 
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
@@ -265,10 +263,10 @@ public class MapActivity extends AppCompatActivity implements
         mqConsumer.setMessageListner(delivery -> {
             try {
                 final String message = new String(delivery.getBody(), "UTF-8");
-                Log.i(TAG, "-------------------------------------");
+            /*    Log.i(TAG, "-------------------------------------");
                 Log.i(TAG, "incoming message");
                 Log.i(TAG, "-------------------------------------");
-                Log.i(TAG, message);
+                Log.i(TAG, message); */
                 if(mMarkerDetailLayout.getVisibility() == View.GONE)
                     if(!isActivityPause) populateMsg(message);
 
@@ -339,7 +337,7 @@ public class MapActivity extends AppCompatActivity implements
                                             new GeoPoint(angkots[i].getAngkot().getLocation().getCoordinates().get(1), angkots[i].getAngkot().getLocation().getCoordinates().get(0)),
                                             1500);
                                 } else {
-                                    Log.i(TAG, "Same Position");
+                                //    Log.i(TAG, "Same Position");
                                 }
                             }
                         } catch (JSONException e) {
@@ -367,7 +365,7 @@ public class MapActivity extends AppCompatActivity implements
                                             new GeoPoint(tmbModels[i].getLocation().getCoordinates().get(1), tmbModels[i].getLocation().getCoordinates().get(0)),
                                             1500);
                                 } else {
-                                    Log.i(TAG, "Same Position");
+                                //    Log.i(TAG, "Same Position");
                                 }
                             }
                         } catch (JSONException e) {
@@ -548,7 +546,8 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(Marker marker, MapView mapView) {
-        markerClick.checkMarker(marker);
+        InfoWindow.closeAllInfoWindowsOn(mapView);
+        CheckPopup.check(marker, MapActivity.this);
         return false;
     }
 
@@ -654,6 +653,7 @@ public class MapActivity extends AppCompatActivity implements
                         20, R.color.colorPrimary
                 )
         );
+        markerMyLocation.setOnMarkerClickListener(this);
         mapView.getOverlayManager().add(markerMyLocation);
         mapView.invalidate();
         mapView.getController().animateTo(markerMyLocation.getPosition());
@@ -678,7 +678,7 @@ public class MapActivity extends AppCompatActivity implements
     public void onMessageReceived(String type, Object msg) {
         if(type.equals(AppPreferences.BROADCAST_TYPE_LOCATION)){
             Location location = (Location) msg;
-            Log.i(TAG, "Location Update "+location.getLatitude()+", "+location.getLongitude());
+        //    Log.i(TAG, "Location Update "+location.getLatitude()+", "+location.getLongitude());
             if(!isConnected)
                 onConnected(location.getLatitude(), location.getLongitude());
             else locationChanged(location);
