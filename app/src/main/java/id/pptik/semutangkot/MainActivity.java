@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity{
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_burn);
+        mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_pasopati);
 
 
 
@@ -140,12 +140,12 @@ public class MainActivity extends AppCompatActivity{
 
     private void setupGridMenu() {
         List<GridMenu> menus = new ArrayList<>();
-        menus.add(new GridMenu("Public Trans.", R.drawable.common_full_open_on_phone));
-        menus.add(new GridMenu("CCTV Viewer", R.drawable.common_full_open_on_phone));
-        menus.add(new GridMenu("Cek KIR", R.drawable.common_full_open_on_phone));
-        menus.add(new GridMenu("Booking Angkot", R.drawable.common_full_open_on_phone));
-        menus.add(new GridMenu("Social Report", R.drawable.common_full_open_on_phone));
-        menus.add(new GridMenu("Bike Community", R.drawable.common_full_open_on_phone));
+        menus.add(new GridMenu("Public Trans.", R.drawable.ic_directions_bus_white_48dp));
+        menus.add(new GridMenu("CCTV Viewer", R.drawable.ic_videocam_white_48dp));
+        menus.add(new GridMenu("Cek KIR", R.drawable.ic_rv_hookup_white_48dp));
+        menus.add(new GridMenu("Booking Angkot", R.drawable.ic_airport_shuttle_white_48dp));
+        menus.add(new GridMenu("Social Report", R.drawable.ic_rate_review_white_48dp));
+        menus.add(new GridMenu("Bike Comm.", R.drawable.ic_directions_bike_white_48dp));
 
         mGridMenuFragment.setupMenu(menus);
     }
