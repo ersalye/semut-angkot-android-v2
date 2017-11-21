@@ -38,7 +38,7 @@
                     android:layout_height="wrap_content"
                     android:text="Dago - Kalapa"
                     android:id="@+id/jurusan"
-                    style="@style/Base.TextAppearance.AppCompat.Large"
+                    style="@style/Base.TextAppearance.AppCompat.Medium"
                     android:textColor="@color/lynch"
                     android:textStyle="bold"
                     android:layout_toRightOf="@id/icon_jurusan"

@@ -399,9 +399,9 @@ public class MapActivity extends AppCompatActivity implements
         CompassOverlay compassOverlay = new CompassOverlay(this, mapView);
         compassOverlay.enableCompass();
         mapView.getOverlays().add(compassOverlay);
-        RotationGestureOverlay rotationGestureOverlay= new RotationGestureOverlay(mapView);
-        rotationGestureOverlay.setEnabled(true);
-        mapView.getOverlays().add(rotationGestureOverlay);
+     //   RotationGestureOverlay rotationGestureOverlay= new RotationGestureOverlay(mapView);
+     //   rotationGestureOverlay.setEnabled(true);
+     //   mapView.getOverlays().add(rotationGestureOverlay);
 
         latitude = (appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0) == 0) ? -6.885719 :
                 appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0);
