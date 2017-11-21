@@ -30,7 +30,7 @@ android {
 
 dependencies {
     implementation 'com.android.support:support-vector-drawable:26.1.0'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -43,7 +43,7 @@ dependencies {
     compile 'com.android.support:design:26.+'
     compile 'com.github.mmin18:realtimeblurview:1.1.0'
     compile 'com.android.support:multidex:1.0.1'
-    compile "com.mikepenz:iconics-core:2.9.3@aar"
+    compile 'com.mikepenz:iconics-core:2.9.3@aar'
     compile 'com.mikepenz:google-material-typeface:3.0.1.1.original@aar'
     compile 'com.mikepenz:fontawesome-typeface:4.7.0.1@aar'
     compile 'com.facebook.android:facebook-android-sdk:4.24.0'
@@ -59,16 +59,17 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.goka.blurredgridmenu:blurredgridmenu:1.0.2'
     compile 'com.google.android.gms:play-services-location:11.6.0'
-    implementation("com.mikepenz:materialdrawer:6.0.1@aar") {
+    implementation('com.mikepenz:materialdrawer:6.0.1@aar') {
         transitive = true
     }
     implementation 'com.mikepenz:crossfader:1.5.1@aar'
-    implementation "com.mikepenz:crossfadedrawerlayout:1.0.1@aar"
+    implementation 'com.mikepenz:crossfadedrawerlayout:1.0.1@aar'
     compile 'com.github.ceryle:RadioRealButton:v2.1.1'
     compile 'com.yarolegovich:sliding-root-nav:1.1.0'
-    compile "com.hanks:htextview-base:0.1.2"
-    compile "com.hanks:htextview-typer:0.1.2"
+    compile 'com.hanks:htextview-base:0.1.2'
+    compile 'com.hanks:htextview-typer:0.1.2'
     testCompile 'junit:junit:4.12'
+    implementation files('libs/jackson-databind-2.0.0.jar')
 }
 
 apply plugin: 'com.google.gms.google-services'
