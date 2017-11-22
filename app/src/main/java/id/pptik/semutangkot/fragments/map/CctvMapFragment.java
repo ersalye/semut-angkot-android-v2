@@ -24,15 +24,19 @@ import id.pptik.semutangkot.helper.map.osm.MapUtilities;
 import id.pptik.semutangkot.helper.map.osm.MarkerClick;
 import id.pptik.semutangkot.helper.map.osm.OsmMarker;
 import id.pptik.semutangkot.models.Cctv;
+import id.pptik.semutangkot.ui.AnimationView;
 
 
 public class CctvMapFragment extends Fragment implements Marker.OnMarkerClickListener {
 
-    private ArrayList<Cctv> list = new ArrayList<>();
+    private ArrayList<Cctv> list = new ArrayList<Cctv>();
     private MapView mMapView;
     private MapUtilities mapUitilities;
     private OsmMarker osmMarker;
     private IMapController mapController;
+    private MarkerClick markerClick;
+    private RelativeLayout markerDetailLayout;
+    private Animation slideDown;
 
     public CctvMapFragment(){
 
@@ -49,7 +53,9 @@ public class CctvMapFragment extends Fragment implements Marker.OnMarkerClickLis
 
         View convertView = inflater.inflate(R.layout.fragment_cctv_map, container, false);
         mMapView = convertView.findViewById(R.id.maposm);
+        markerDetailLayout = convertView.findViewById(R.id.markerdetail_layout);
 
+        markerClick = new MarkerClick(getActivity(), markerDetailLayout);
 
         mapUitilities = new MapUtilities(mMapView);
         osmMarker = new OsmMarker(mMapView);
@@ -64,7 +70,7 @@ public class CctvMapFragment extends Fragment implements Marker.OnMarkerClickLis
             mapController.animateTo(marker.getPosition());
         }
 
-        ArrayList<GeoPoint> geoPoints = new ArrayList<>();
+        ArrayList<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
         for(int i = 0; i < mMapView.getOverlays().size(); i++){
             if(mMapView.getOverlays().get(i) instanceof Marker ) {
                 Marker marker = (Marker) mMapView.getOverlays().get(i);
@@ -74,6 +80,11 @@ public class CctvMapFragment extends Fragment implements Marker.OnMarkerClickLis
 
         zoomToBounds(MapUtilities.computeArea(geoPoints));
 
+        slideDown = new AnimationView(getActivity()).getAnimation(R.anim.slide_down, anim -> {
+            if(markerDetailLayout.getVisibility() == View.VISIBLE) markerDetailLayout.setVisibility(View.GONE);
+        });
+
+        markerDetailLayout.setOnClickListener(view -> markerDetailLayout.startAnimation(slideDown));
         return convertView;
     }
 
@@ -89,7 +100,8 @@ public class CctvMapFragment extends Fragment implements Marker.OnMarkerClickLis
                 public void onGlobalLayout() {
                     mMapView.zoomToBoundingBox(box, true);
                     ViewTreeObserver vto2 = mMapView.getViewTreeObserver();
-                        vto2.removeOnGlobalLayoutListener(this);
+                    vto2.removeOnGlobalLayoutListener(this);
+
                 }
             });
         }
@@ -102,7 +114,7 @@ public class CctvMapFragment extends Fragment implements Marker.OnMarkerClickLis
 
     @Override
     public boolean onMarkerClick(Marker marker, MapView mapView) {
-
+        markerClick.checkMarker(marker);
         return false;
     }
 }
