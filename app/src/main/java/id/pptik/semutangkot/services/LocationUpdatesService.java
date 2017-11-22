@@ -20,6 +20,10 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.github.hynra.wortel.BrokerCallback;
+import com.github.hynra.wortel.Consumer;
+import com.github.hynra.wortel.Factory;
+import com.github.hynra.wortel.Publisher;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -27,6 +31,10 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.rabbitmq.client.Channel;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Date;
 
@@ -34,10 +42,14 @@ import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.WizardActivity;
 import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.BroadcastManager;
+import id.pptik.semutangkot.models.Profile;
+import id.pptik.semutangkot.utils.GetCurrentDate;
 import id.pptik.semutangkot.utils.Logger;
+import id.pptik.semutangkot.utils.ProfileUtils;
+import id.pptik.semutangkot.utils.StringResources;
 import id.pptik.semutangkot.utils.Utils;
 
-public class LocationUpdatesService extends Service {
+public class LocationUpdatesService extends Service implements BrokerCallback {
 
     private static final String PACKAGE_NAME = LocationUpdatesService.class.getSimpleName();
 
@@ -48,7 +60,7 @@ public class LocationUpdatesService extends Service {
 
     private final IBinder mBinder = new LocalBinder();
 
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 15000;
 
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -73,7 +85,13 @@ public class LocationUpdatesService extends Service {
 
     private AppPreferences mPreferences;
 
+    private Factory mqFactory;
+    private Consumer mqConsumer;
+    private Publisher mqProducer;
+    private Profile mProfile;
+
     public LocationUpdatesService() {
+
     }
 
     @Override
@@ -91,10 +109,13 @@ public class LocationUpdatesService extends Service {
             }
         };
 
+        connectToRabbit();
+
         createLocationRequest();
         getLastLocation();
 
         HandlerThread handlerThread = new HandlerThread(TAG);
+        mProfile = ProfileUtils.getProfile(getApplicationContext());
         handlerThread.start();
         mServiceHandler = new Handler(handlerThread.getLooper());
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -114,6 +135,47 @@ public class LocationUpdatesService extends Service {
         // Tells the system to not try to recreate the service after it has been killed.
         return START_NOT_STICKY;
     }
+
+    private void connectToRabbit() {
+        this.mqFactory = new Factory(
+                StringResources.get(R.string.MQ_HOSTNAME),
+                StringResources.get(R.string.MQ_VIRTUAL_HOST),
+                StringResources.get(R.string.MQ_USERNAME),
+                StringResources.get(R.string.MQ_PASSWORD),
+                StringResources.get(R.string.MQ_EXCHANGE_NAME),
+                StringResources.get(R.string.MQ_DEFAULT_ROUTING_KEY),
+                Integer.parseInt(StringResources.get(R.string.MQ_PORT)));
+    }
+
+
+    private void publish(){
+        double longitude = mLocation.getLongitude();
+        double latitude = mLocation.getLatitude();
+        double speed = mLocation.getSpeed();
+        mqProducer = mqFactory.createProducer(LocationUpdatesService.this);
+        mqProducer.setRoutingkey(StringResources.get(R.string.MQ_ROUTING_UPDATE_USER));
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("Token", mProfile.getToken());
+            jsonObject.put("Time", GetCurrentDate.now());
+            jsonObject.put("Latitude", latitude);
+            jsonObject.put("Longitude", longitude);
+            jsonObject.put("Speed", speed);
+            jsonObject.put("RawTime", mLocation.getTime());
+            jsonObject.put("Biker", mPreferences.getBoolean(AppPreferences.KEY_IS_BIKER, false));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String message = jsonObject.toString();
+        Log.d(TAG, "publish: ");
+        Log.i(TAG, message);
+        mqProducer.publish(message, null, false);
+    }
+
+
+
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -240,6 +302,8 @@ public class LocationUpdatesService extends Service {
                 location
         );
 
+        publish();
+
         if (serviceIsRunningInForeground(this)) {
             mNotificationManager.notify(NOTIFICATION_ID, getNotification());
         }
@@ -250,6 +314,21 @@ public class LocationUpdatesService extends Service {
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    @Override
+    public void onConnectionSuccess(Channel channel) {
+
+    }
+
+    @Override
+    public void onConnectionFailure(String message) {
+        Log.i(TAG, message);
+    }
+
+    @Override
+    public void onConnectionClosed(String message) {
+
     }
 
     public class LocalBinder extends Binder {

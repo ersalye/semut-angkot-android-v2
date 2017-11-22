@@ -14,9 +14,11 @@ import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 
 import id.pptik.semutangkot.R;
+import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.TimeHelper;
 import id.pptik.semutangkot.models.angkot.Angkot;
 import id.pptik.semutangkot.utils.CustomDrawable;
+import id.pptik.semutangkot.utils.NumUtils;
 
 public class AngkotPopUp {
 
@@ -45,7 +47,17 @@ public class AngkotPopUp {
         platText.setText(angkot.getAngkot().getPlatNomor());
 
         TextView timeDetail = customView.findViewById(R.id.time_detail);
-        String tmp = "<b>Lokasi Terakhir : </b>"+ TimeHelper.getTimeAgo(angkot.getAngkot().getLastUpdate());
+        String tmp = "<b>Lokasi Terakhir : </b>"+ TimeHelper.getTimeAgo(angkot.getAngkot().getLastUpdate())+"<br>";
+
+        AppPreferences preferences = new AppPreferences(context);
+
+        tmp += "Sekitar <b>"+ NumUtils.round(new NumUtils().distance(
+                preferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0),
+                preferences.getFloat(AppPreferences.KEY_MY_LONGITUDE, 0),
+                angkot.getAngkot().getLocation().getCoordinates().get(1),
+                angkot.getAngkot().getLocation().getCoordinates().get(0), "K"
+        ),2)+"</b> KM dari lokasi Anda";
+
         timeDetail.setText(Html.fromHtml(tmp));
 
 
@@ -53,7 +65,7 @@ public class AngkotPopUp {
                 .setTitle("Angkot")
                 .setIcon(CustomDrawable.googleMaterial(
                         context,
-                        GoogleMaterial.Icon.gmd_drive_eta,
+                        GoogleMaterial.Icon.gmd_airport_shuttle,
                         46, R.color.colorPrimaryDark
                 ))
                 .setCustomView(customView)

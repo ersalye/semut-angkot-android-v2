@@ -21,6 +21,9 @@ public class CommonRest {
     public static final String ENDPOINT_ANGKOT_PATH = "users/path";
     public static final String ENDPOINT_GET_PATH = "endpoint.get.path";
     public static final String ENDPOINT_CREATE_POST = "post/create";
+    public static final String ENDPOINT_GET_ANGKOT ="publictrans/angkot";
+    public static final String ENDPOINT_GET_FLASH_NOTIF = "notif/flash";
+
 
     public CommonRest(){
 
@@ -61,6 +64,46 @@ public class CommonRest {
                     @Override
                     public void onResponse(JSONObject response) {
                         handler.onFinishRequest(response, ENDPOINT_STATUS);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+
+
+    public static void getFlashNotif(String token, RestResponHandler handler){
+        String endPoint = StringResources.get(R.string.apiEndPoint);
+        AndroidNetworking.post(endPoint+ ENDPOINT_GET_FLASH_NOTIF)
+                .addBodyParameter("Token", token)
+                .setTag(ENDPOINT_GET_FLASH_NOTIF)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, ENDPOINT_GET_FLASH_NOTIF);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+    public static void getAngkot(String token, RestResponHandler handler){
+        String endPoint = StringResources.get(R.string.apiEndPoint);
+        AndroidNetworking.post(endPoint+ ENDPOINT_GET_ANGKOT)
+                .addBodyParameter("Token", token)
+                .setTag(ENDPOINT_GET_ANGKOT)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, ENDPOINT_GET_ANGKOT);
                     }
                     @Override
                     public void onError(ANError error) {

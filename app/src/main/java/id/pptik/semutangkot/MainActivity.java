@@ -25,11 +25,17 @@ import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
 import com.yarolegovich.slidingrootnav.SlidingRootNavLayout;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
+import id.pptik.semutangkot.models.RequestStatus;
+import id.pptik.semutangkot.networking.CommonRest;
 import id.pptik.semutangkot.services.LocationUpdatesService;
 import id.pptik.semutangkot.utils.CustomDrawable;
 import id.pptik.semutangkot.utils.ProfileUtils;
@@ -41,6 +47,7 @@ public class MainActivity extends AppCompatActivity{
     private boolean mBound = false;
     private GridMenuFragment mGridMenuFragment;
     Toolbar toolbar;
+    private TextView infoText;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -67,7 +74,21 @@ public class MainActivity extends AppCompatActivity{
 
         mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_pasopati);
 
+        infoText = findViewById(R.id.info_flash);
 
+        Profile profile = ProfileUtils.getProfile(this);
+        CommonRest.getFlashNotif(profile.getToken(), (jResult, type) -> {
+            RequestStatus status = ProfileUtils.getReqStatus(jResult.toString());
+            if(status.getSuccess()){
+                try {
+                    String tmp = "<b>"+jResult.getJSONObject("notif").getString("title")
+                            +" : </b>"+jResult.getJSONObject("notif").getString("content");
+                    infoText.setText(Html.fromHtml(tmp));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         setupGridMenu();
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
@@ -84,6 +105,9 @@ public class MainActivity extends AppCompatActivity{
                     break;
                 case 2:
                     startActivity(new Intent(MainActivity.this, KirActivity.class));
+                    break;
+                case 3:
+                    startActivity(new Intent(MainActivity.this, BookingAngkotActivity.class));
                     break;
             }
         });

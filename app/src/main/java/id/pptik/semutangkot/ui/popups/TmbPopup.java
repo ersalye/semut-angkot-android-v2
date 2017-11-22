@@ -13,6 +13,7 @@ import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 
 import id.pptik.semutangkot.R;
+import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.helper.TimeHelper;
 import id.pptik.semutangkot.models.TmbModel;
 import id.pptik.semutangkot.models.angkot.Angkot;
@@ -46,7 +47,17 @@ public class TmbPopup {
         platText.setText(model.getBuscode());
 
         TextView timeDetail = customView.findViewById(R.id.time_detail);
-        String tmp = "<b>Lokasi Terakhir : </b>"+ TimeHelper.getTimeAgo(model.getRawgpsdatetime());
+        String tmp = "<b>Lokasi Terakhir : </b>"+ TimeHelper.getTimeAgo(NumUtils.convertMongoDateToAgo7(model.getGpsdatetime()))+"<br>";
+
+        AppPreferences preferences = new AppPreferences(context);
+
+        tmp += "Sekitar <b>"+NumUtils.round(new NumUtils().distance(
+                preferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0),
+                preferences.getFloat(AppPreferences.KEY_MY_LONGITUDE, 0),
+                model.getLocation().getCoordinates().get(1),
+                model.getLocation().getCoordinates().get(0), "K"
+        ),2)+"</b> KM dari lokasi Anda";
+
         timeDetail.setText(Html.fromHtml(tmp));
 
 

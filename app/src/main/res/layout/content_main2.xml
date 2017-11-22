@@ -30,7 +30,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorPrimaryDark"
-                android:text="INFO LALIN :"
+                android:text="INFO :"
+                android:id="@+id/info_flash"
+                android:textSize="12dp"
                 android:fontFamily="@font/roboto"
                 android:ellipsize="end"
                 />

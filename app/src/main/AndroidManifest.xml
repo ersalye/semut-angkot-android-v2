@@ -73,6 +73,10 @@
         <activity
             android:name=".CCTVActivity"
             android:label="@string/title_activity_cctv"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".BookingAngkotActivity"
+            android:label="@string/title_activity_booking_angkot"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
