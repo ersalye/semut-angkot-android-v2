@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity{
                 case 1:
                     startActivity(new Intent(MainActivity.this, CCTVActivity.class));
                     break;
+                case 2:
+                    startActivity(new Intent(MainActivity.this, KirActivity.class));
+                    break;
             }
         });
 

@@ -13,9 +13,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.CompoundButton;
@@ -38,6 +40,9 @@ import net.grandcentrix.tray.core.ItemNotFoundException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -89,6 +94,7 @@ public class MapActivity extends AppCompatActivity implements
     private boolean isFirsInit = true;
     private Marker[] angkotMarkers;
     private Angkot[] angkots;
+    private ArrayList<Object> trackerObjects;
     private TmbModel[] tmbModels;
     private Marker[] tmbMarkers;
     private Marker markerMyLocation;
@@ -110,15 +116,18 @@ public class MapActivity extends AppCompatActivity implements
     private double latitude, longitude, speed, altitude;
     BottomNavigationView navigation;
     private BroadcastManager mBroadcastManager;
-
+    private boolean isTouch = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        trackerObjects = new ArrayList<>();
 
         mBroadcastManager = new BroadcastManager(this);
         mBroadcastManager.subscribeToUi(this);
@@ -192,6 +201,21 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int eventAction = event.getAction();
+        switch (eventAction) {
+
+            case MotionEvent.ACTION_MOVE:
+                isTouch = true;
+                break;
+
+            case MotionEvent.ACTION_UP:
+                isTouch = false;
+                break;
+        }
+        return true;
+    }
 
 
     private void setPathList(){
@@ -223,6 +247,7 @@ public class MapActivity extends AppCompatActivity implements
     }
 
     private void setAngkotFilterList(){
+        Log.i("SHIT", "SHIIIIIIIIIIIIIIIT");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mListRecycleView.setHasFixedSize(true);
@@ -233,12 +258,23 @@ public class MapActivity extends AppCompatActivity implements
 
     private void updateAngkotFilterList(){
         angkotListAdapter = new AngkotListAdapter(this, (view, position) -> {
-            mapView.getController().animateTo(new GeoPoint(
-                    angkots[position].getAngkot().getLocation().getCoordinates().get(1),
-                    angkots[position].getAngkot().getLocation().getCoordinates().get(0)
-            ));
+            Object object = trackerObjects.get(position);
+            if(object instanceof Angkot){
+                Angkot a = (Angkot) object;
+                mapView.getController().animateTo(new GeoPoint(
+                        a.getAngkot().getLocation().getCoordinates().get(1),
+                        a.getAngkot().getLocation().getCoordinates().get(0)
+                ));
+            }else {
+                TmbModel t = (TmbModel) object;
+                mapView.getController().animateTo(new GeoPoint(
+                        t.getLocation().getCoordinates().get(1),
+                        t.getLocation().getCoordinates().get(0)
+                ));
+            }
+
             mListRecycleView.setVisibility(View.GONE);
-        }, angkots);
+        }, trackerObjects);
         mListRecycleView.setAdapter(angkotListAdapter);
     }
 
@@ -284,7 +320,11 @@ public class MapActivity extends AppCompatActivity implements
             JSONArray tmbArray = mainObject.getJSONArray("tmb");
             // angkot
             if(isFirsInit){
+                trackerObjects.clear();
+
                 isFirsInit = false;
+                Log.i("SHIIT", "SHIT TO FALSE");
+
                 indicator.hide();
                 angkots = new Angkot[angkotArray.length()];
                 angkotMarkers = new Marker[angkotArray.length()];
@@ -298,7 +338,7 @@ public class MapActivity extends AppCompatActivity implements
                     angkotMarkers[i].setOnMarkerClickListener(this);
                     angkotMarkers[i].setEnabled(angkotVisible);
                     mapView.getOverlays().add(angkotMarkers[i]);
-
+                    trackerObjects.add(angkots[i]);
                 }
                 mapView.invalidate();
                 setAngkotFilterList();
@@ -316,12 +356,14 @@ public class MapActivity extends AppCompatActivity implements
                     tmbMarkers[i].setOnMarkerClickListener(this);
                     tmbMarkers[i].setEnabled(angkotVisible);
                     mapView.getOverlays().add(tmbMarkers[i]);
+                    trackerObjects.add(tmbModels[i]);
 
                 }
                 mapView.invalidate();
 
             }else {
-                if (angkotArray.length() == angkots.length) {
+                if (angkotArray.length() == angkots.length &&
+                        mListRecycleView.getVisibility() == View.GONE && !isTouch) {
                     /** animate angkot **/
                     for (int i = 0; i < angkotArray.length(); i++) {
                         JSONObject entity = null;
@@ -348,8 +390,8 @@ public class MapActivity extends AppCompatActivity implements
                             e.printStackTrace();
                         }
                     }
-                    if(mListRecycleView.getVisibility() == View.VISIBLE)
-                        updateAngkotFilterList();
+                  //  if(mListRecycleView.getVisibility() == View.VISIBLE)
+                    //    updateAngkotFilterList();
 
                     /** animate tmb **/
                     for (int i = 0; i < tmbArray.length(); i++) {
@@ -381,7 +423,7 @@ public class MapActivity extends AppCompatActivity implements
 
                 }else {
                     // found new data
-                    isFirsInit = true;
+                   // isFirsInit = true;
                 }
             }
         } catch (JSONException e) {
@@ -399,12 +441,9 @@ public class MapActivity extends AppCompatActivity implements
         mapView.getController().setZoom(15);
         mapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
 
+
         // mapView.setTileSource(new GoogleMapProvider("GoogleMapStandart", GoogleMapProvider.STANDARD));
       //  mapView.getTileProvider().setTileRequestCompleteHandler(new SimpleInvalidationHandler(mapView));
-
-        CompassOverlay compassOverlay = new CompassOverlay(this, mapView);
-        compassOverlay.enableCompass();
-        mapView.getOverlays().add(compassOverlay);
 
         latitude = (appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0) == 0) ? -6.885719 :
                 appPreferences.getFloat(AppPreferences.KEY_MY_LATITUDE, 0);
@@ -446,8 +485,10 @@ public class MapActivity extends AppCompatActivity implements
                 if(mListRecycleView.getVisibility() == View.VISIBLE)
                     mListRecycleView.setVisibility(View.GONE);
                 else {
-                    if(angkotVisible)
+                    if(angkotVisible) {
+                        updateAngkotFilterList();
                         mListRecycleView.setVisibility(View.VISIBLE);
+                    }
                     else {
                         Toast.makeText(mContext, "Aktifkan menu Angkot pada menu filter", Toast.LENGTH_LONG).show();
                     }

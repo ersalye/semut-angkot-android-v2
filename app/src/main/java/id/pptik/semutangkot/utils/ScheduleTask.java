@@ -71,4 +71,22 @@ public class ScheduleTask {
             handler.postDelayed(this, periode*1000);
         }
     };
+
+
+    public interface DelayCallback{
+        void afterDelay();
+    }
+
+    public static void delay(int milsecs, final DelayCallback delayCallback){
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                delayCallback.afterDelay();
+            }
+        }, milsecs); // afterDelay will be executed after (secs*1000) milliseconds.
+    }
+
+
+
 }

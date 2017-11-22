@@ -1,6 +1,8 @@
 package id.pptik.semutangkot.utils;
 
 
+import android.util.Log;
+
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import java.text.ParseException;
@@ -41,6 +43,24 @@ public class NumUtils {
             Date d = df.parse(val);
             String finalStr = outputFormat.format(d);
             val = getTimeAgo(finalStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return val;
+    }
+
+
+    public static String convertMongoDateToAgo7(String val){
+        ISO8601DateFormat df = new ISO8601DateFormat();
+        SimpleDateFormat outputFormat= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            final long millisToAdd = 28_800_000; //7 hours
+            Date d = df.parse(val);
+            d.setTime(d.getTime() - millisToAdd);
+            String finalStr = outputFormat.format(d);
+
+            val = finalStr;
+            //Log.i("7", finalStr);
         } catch (ParseException e) {
             e.printStackTrace();
         }

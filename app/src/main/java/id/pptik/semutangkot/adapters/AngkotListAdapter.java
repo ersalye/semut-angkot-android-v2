@@ -7,28 +7,36 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import id.pptik.semutangkot.R;
 import id.pptik.semutangkot.helper.TimeHelper;
 import id.pptik.semutangkot.models.AngkotPath;
+import id.pptik.semutangkot.models.TmbModel;
 import id.pptik.semutangkot.models.angkot.Angkot;
 import id.pptik.semutangkot.models.mapview.Tracker;
 import id.pptik.semutangkot.utils.CompareDate;
+import id.pptik.semutangkot.utils.CustomDrawable;
+import id.pptik.semutangkot.utils.NumUtils;
 
 
 public class AngkotListAdapter extends RecyclerView.Adapter<AngkotListAdapter.ViewHolder> {
 
-    private Angkot[] trackers;
+    private ArrayList<Object> trackers;
     private Context context;
     private OnDataSelected  onDataSelected;
 
 
-    public AngkotListAdapter(Context context, OnDataSelected onDataSelected, Angkot[] trackers) {
+    public AngkotListAdapter(Context context, OnDataSelected onDataSelected, ArrayList<Object> trackers) {
         this.context = context;
         this.onDataSelected = onDataSelected;
         this.trackers = trackers;
@@ -47,15 +55,35 @@ public class AngkotListAdapter extends RecyclerView.Adapter<AngkotListAdapter.Vi
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        final Angkot angkot = trackers[position];
+        if(trackers.get(position) instanceof  Angkot) {
+            final Angkot angkot = (Angkot) trackers.get(position);
+            String detail = "<b>Jurusan : </b>" + angkot.getAngkot().getTrayek().getNama();
+            detail += "<br><b>Lokasi Tanggal : </b>" + angkot.getAngkot().getLastUpdate();
+            detail += " <br> <b><font color='blue'>" + TimeHelper.getTimeAgo(angkot.getAngkot().getLastUpdate()) + "</font></b>";
 
-        String detail = "<b>Jurusan : </b>"+angkot.getAngkot().getTrayek().getNama();
-        detail += "<br><b>Lokasi Tanggal : </b>"+angkot.getAngkot().getLastUpdate();
-        detail += " <br> <b><font color='blue'>"+ TimeHelper.getTimeAgo(angkot.getAngkot().getLastUpdate())+"</font></b>";
+            holder.gpsNameText.setText("Angkot | "+angkot.getAngkot().getPlatNomor());
+            holder.gpsDetail.setText(Html.fromHtml(detail), TextView.BufferType.SPANNABLE);
 
-        holder.gpsNameText.setText(angkot.getAngkot().getPlatNomor());
-        holder.gpsLocText.setText(angkot.getAngkot().getJumlahPenumpang().toString());
-        holder.gpsDetail.setText(Html.fromHtml(detail), TextView.BufferType.SPANNABLE);
+            holder.carIcon.setImageDrawable(CustomDrawable.googleMaterial(
+                    context, GoogleMaterial.Icon.gmd_airport_shuttle,
+                    35, R.color.colorPrimaryDark
+            ));
+
+        }else {
+            final TmbModel tmbModel = (TmbModel) trackers.get(position);
+            String detail = "<b>Detail : </b>" + tmbModel.getKoridor();
+            detail += "<br><b>Lokasi Tanggal : </b>" + NumUtils.convertMongoDateToAgo7(tmbModel.getGpsdatetime()) ;
+            detail += " <br> <b><font color='blue'>" + TimeHelper.getTimeAgo(NumUtils.convertMongoDateToAgo7(tmbModel.getGpsdatetime())) + "</font></b>";
+
+            holder.gpsNameText.setText("TMB | "+tmbModel.getBuscode());
+
+            holder.gpsDetail.setText(Html.fromHtml(detail), TextView.BufferType.SPANNABLE);
+
+            holder.carIcon.setImageDrawable(CustomDrawable.googleMaterial(
+                    context, GoogleMaterial.Icon.gmd_directions_bus,
+                    35, R.color.colorPrimaryDark
+            ));
+        }
 
         holder.cardView.setOnClickListener(view1 -> {
             onDataSelected.onDataSelected(view1, position);
@@ -67,7 +95,7 @@ public class AngkotListAdapter extends RecyclerView.Adapter<AngkotListAdapter.Vi
 
     @Override
     public int getItemCount() {
-        return trackers.length;
+        return trackers.size();
     }
 
     public interface OnDataSelected {
@@ -78,15 +106,17 @@ public class AngkotListAdapter extends RecyclerView.Adapter<AngkotListAdapter.Vi
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView gpsNameText, gpsLocText, gpsDetail;
+        public TextView gpsNameText, gpsDetail;
         public CardView cardView;
+        public ImageView carIcon;
 
         public ViewHolder(View view) {
             super(view);
             gpsNameText = view.findViewById(R.id.gps_name);
-            gpsLocText = view.findViewById(R.id.gps_location);
             gpsDetail = view.findViewById(R.id.gps_detail);
             cardView = view.findViewById(R.id.mainView);
+            carIcon = view.findViewById(R.id.icon_angkot);
+
         }
     }
 
