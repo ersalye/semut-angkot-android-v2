@@ -205,5 +205,6 @@
     <string name="location_updated">Lokasi Update</string>
     <string name="title_activity_kir">Cek KIR</string>
     <string name="title_activity_main">Semut App</string>
+    <string name="title_activity_cctv">CCTVActivity</string>
 
 </resources>

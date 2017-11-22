@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity{
                 case 0:
                     startActivity(new Intent(MainActivity.this, MapActivity.class));
                     break;
+                case 1:
+                    startActivity(new Intent(MainActivity.this, CCTVActivity.class));
+                    break;
             }
         });
 

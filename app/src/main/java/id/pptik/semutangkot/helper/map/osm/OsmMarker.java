@@ -8,6 +8,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
 import id.pptik.semutangkot.R;
+import id.pptik.semutangkot.models.Cctv;
 import id.pptik.semutangkot.models.mapview.MyLocation;
 import id.pptik.semutangkot.models.mapview.Tracker;
 import id.pptik.semutangkot.models.mapview.TranspostMap;
@@ -43,6 +44,13 @@ public class OsmMarker {
             marker = new Marker(mapView);
             marker.setPosition(point);
             marker.setIcon(mapView.getContext().getResources().getDrawable(R.drawable.tranpost_icon));
+            marker.setRelatedObject(objectMap);
+            mapView.getOverlays().add(marker);
+        }else if(objectMap instanceof Cctv){
+            GeoPoint point = new GeoPoint(((Cctv) objectMap).getLatitude(), ((Cctv) objectMap).getLongitude());
+            marker = new Marker(mapView);
+            marker.setPosition(point);
+            marker.setIcon(mapView.getContext().getResources().getDrawable(R.drawable.cctv_icon));
             marker.setRelatedObject(objectMap);
             mapView.getOverlays().add(marker);
         }

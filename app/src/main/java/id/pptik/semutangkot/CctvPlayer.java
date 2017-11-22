@@ -28,7 +28,7 @@ public class CctvPlayer extends Activity implements MediaPlayer.OnPreparedListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cctv_player);
 
-        videoView = (VideoView)findViewById(R.id.videoView);
+        videoView = findViewById(R.id.videoView);
         Bundle bundle = this.getIntent().getExtras();
         setUrlStr(bundle.getString(StringResources.get(R.string.INTENT_VIDEO_URL)));
 
