@@ -91,9 +91,13 @@ public class CctvListAdapter extends BaseAdapter {
 
         convertView.setOnClickListener(view -> {
             if(isStreaming){
-
+                Intent intent = new Intent(mContext, CctvPlayer.class);
+                intent.putExtra(StringResources.get(R.string.INTENT_VIDEO_IS_STREAMING), true);
+                intent.putExtra(StringResources.get(R.string.INTENT_VIDEO_URL), cctv.getUrlVideo());
+                mContext.startActivity(intent);
             }else {
                 Intent intent = new Intent(mContext, CctvPlayer.class);
+                intent.putExtra(StringResources.get(R.string.INTENT_VIDEO_IS_STREAMING), false);
                 intent.putExtra(StringResources.get(R.string.INTENT_VIDEO_URL), cctv.getUrlVideo()+
                         cctv.getItemID());
                 mContext.startActivity(intent);
