@@ -23,6 +23,7 @@ public class CommonRest {
     public static final String ENDPOINT_CREATE_POST = "post/create";
     public static final String ENDPOINT_GET_ANGKOT ="publictrans/angkot";
     public static final String ENDPOINT_GET_FLASH_NOTIF = "notif/flash";
+    public static final String ENDPOINT_GET_BIKE = "bike/map";
 
 
     public CommonRest(){
@@ -92,6 +93,30 @@ public class CommonRest {
                     }
                 });
     }
+
+
+
+    public static void getBike(String token, RestResponHandler handler){
+        String endPoint = StringResources.get(R.string.apiEndPoint);
+        AndroidNetworking.post(endPoint+ ENDPOINT_GET_BIKE)
+                .addBodyParameter("Token", token)
+                .setTag(ENDPOINT_GET_BIKE)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handler.onFinishRequest(response, ENDPOINT_GET_BIKE);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        handler.onFinishRequest(null, ENDPOINT_ERROR);
+                    }
+                });
+    }
+
+
+
 
     public static void getAngkot(String token, RestResponHandler handler){
         String endPoint = StringResources.get(R.string.apiEndPoint);

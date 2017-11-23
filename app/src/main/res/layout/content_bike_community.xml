@@ -36,6 +36,19 @@
                 android:gravity="center"
                 android:text="AKTIFKAN BIKE SHARING \nMODE"
                 />
+            <Button
+                android:layout_marginTop="5dp"
+                android:id="@+id/map_button"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_full_round_primary"
+                android:text="Lihat Peta"
+                android:paddingLeft="40dp"
+                android:paddingRight="40dp"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/colorPrimaryDark"
+                />
         </LinearLayout>
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

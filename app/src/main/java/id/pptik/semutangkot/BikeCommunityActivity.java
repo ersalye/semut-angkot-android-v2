@@ -1,12 +1,14 @@
 package id.pptik.semutangkot;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ public class BikeCommunityActivity extends AppCompatActivity {
     private Context context;
     private AppPreferences preferences;
     private boolean isShared = false;
+    private Button tomapButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,10 @@ public class BikeCommunityActivity extends AppCompatActivity {
         shareLayout = findViewById(R.id.share_layout);
         shareIcon = findViewById(R.id.share_icon);
         shareText = findViewById(R.id.title_text);
+        tomapButton = findViewById(R.id.map_button);
+
+        tomapButton.setOnClickListener(view -> startActivity(new Intent(BikeCommunityActivity.this,
+                BikeMapActivity.class)));
 
         context = this;
         preferences = new AppPreferences(context);

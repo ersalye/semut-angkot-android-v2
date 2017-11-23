@@ -81,6 +81,10 @@
         <activity
             android:name=".BikeCommunityActivity"
             android:label="@string/title_activity_bike_community"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".BikeMapActivity"
+            android:label="@string/title_activity_bike_map"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
