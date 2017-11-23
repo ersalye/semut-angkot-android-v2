@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -35,6 +36,7 @@ public class BikeCommunityActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bike_community);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         shareLayout = findViewById(R.id.share_layout);
         shareIcon = findViewById(R.id.share_icon);
         shareText = findViewById(R.id.title_text);
@@ -81,5 +83,14 @@ public class BikeCommunityActivity extends AppCompatActivity {
         shareText.setText("NONAKTIFKAN SHARING LOKASI\nBIKE COMMUNITY");
     }
 
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
 }

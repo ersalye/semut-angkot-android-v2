@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JsResult;
 import android.widget.Button;
@@ -50,6 +51,7 @@ public class KirActivity extends AppCompatActivity implements RestResponHandler 
         setContentView(R.layout.activity_kir);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         context = this;
 
@@ -127,4 +129,16 @@ public class KirActivity extends AppCompatActivity implements RestResponHandler 
                 break;
         }
     }
+
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 }

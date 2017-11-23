@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.google.gson.Gson;
@@ -43,6 +44,7 @@ public class BookingAngkotActivity extends AppCompatActivity {
         setContentView(R.layout.activity_booking_angkot);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         recyclerView = findViewById(R.id.recycleview);
 
@@ -83,6 +85,17 @@ public class BookingAngkotActivity extends AppCompatActivity {
         recyclerView.clearFocus();
         BookingAngkotListAdapter adapter = new BookingAngkotListAdapter(context, angkotArrayList);
         recyclerView.setAdapter(adapter);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }
