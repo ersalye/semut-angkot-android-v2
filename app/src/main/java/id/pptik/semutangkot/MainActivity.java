@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.goka.blurredgridmenu.GridMenu;
@@ -32,6 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.pptik.semutangkot.easylogin.EasyLogin;
+import id.pptik.semutangkot.easylogin.networks.SocialNetwork;
+import id.pptik.semutangkot.helper.AppPreferences;
 import id.pptik.semutangkot.interfaces.RestResponHandler;
 import id.pptik.semutangkot.models.Profile;
 import id.pptik.semutangkot.models.RequestStatus;
@@ -64,6 +68,8 @@ public class MainActivity extends AppCompatActivity{
             mBound = false;
         }
     };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +114,12 @@ public class MainActivity extends AppCompatActivity{
                     break;
                 case 3:
                     startActivity(new Intent(MainActivity.this, BookingAngkotActivity.class));
+                    break;
+                case 4:
+                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+                    break;
+                case 5:
+                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
                     break;
             }
         });
@@ -158,10 +170,26 @@ public class MainActivity extends AppCompatActivity{
 
         navLay.findViewById(R.id.setting_layout).setOnClickListener(view -> {
             // handle settings click
+            Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+        });
+
+        navLay.findViewById(R.id.about_layout).setOnClickListener(view -> {
+            Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
         });
 
         navLay.findViewById(R.id.logout_layout).setOnClickListener(view -> {
             // handle logout click
+            EasyLogin easyLogin = EasyLogin.getInstance();
+            for (SocialNetwork socialNetwork : easyLogin.getInitializedSocialNetworks()) {
+                socialNetwork.logout();
+                Log.i("Social Login", socialNetwork.getNetwork().name());
+            }
+            AppPreferences pref = new AppPreferences(MainActivity.this);
+           // pref.put(AppPreferences.KEY_IS_LOGGED_IN, false);
+           // pref.put(AppPreferences.KEY_IS_FIRST_LAUNCH, false);
+            pref.clear();
+            startActivity(new Intent(MainActivity.this, WizardActivity.class));
+            finish();
         });
 
     }
@@ -173,7 +201,7 @@ public class MainActivity extends AppCompatActivity{
         menus.add(new GridMenu("Public Trans.", R.drawable.ic_directions_bus_white_48dp));
         menus.add(new GridMenu("CCTV Viewer", R.drawable.ic_videocam_white_48dp));
         menus.add(new GridMenu("Cek KIR", R.drawable.ic_rv_hookup_white_48dp));
-        menus.add(new GridMenu("Booking Angkot", R.drawable.ic_airport_shuttle_white_48dp));
+        menus.add(new GridMenu("Charter Angkot", R.drawable.ic_airport_shuttle_white_48dp));
         menus.add(new GridMenu("Social Report", R.drawable.ic_rate_review_white_48dp));
         menus.add(new GridMenu("Bike Comm.", R.drawable.ic_directions_bike_white_48dp));
 
@@ -182,6 +210,9 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public void onDestroy(){
+        if(Utils.requestingLocationUpdates(this)){
+            mService.removeLocationUpdates();
+        }
         super.onDestroy();
     }
 
