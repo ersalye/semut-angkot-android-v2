@@ -68,7 +68,7 @@ dependencies {
     compile 'com.hanks:htextview-base:0.1.2'
     compile 'com.hanks:htextview-typer:0.1.2'
     testCompile 'junit:junit:4.12'
-  //  compile 'com.github.hynra:BottomDialogs:1.2.1-y'
+    //  compile 'com.github.hynra:BottomDialogs:1.2.1-y'
     compile 'de.hdodenhof:circleimageview:2.2.0'
     compile 'com.devbrackets.android:exomedia:4.0.3'
     implementation files('libs/jackson-databind-2.0.0.jar')

@@ -77,6 +77,10 @@
         <activity
             android:name=".BookingAngkotActivity"
             android:label="@string/title_activity_booking_angkot"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".BikeCommunityActivity"
+            android:label="@string/title_activity_bike_community"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

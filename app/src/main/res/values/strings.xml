@@ -207,5 +207,6 @@
     <string name="title_activity_main">Semut App</string>
     <string name="title_activity_cctv">CCTV</string>
     <string name="title_activity_booking_angkot">Carter Angkot</string>
+    <string name="title_activity_bike_community">Bike Community</string>
 
 </resources>

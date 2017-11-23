@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity{
     private GridMenuFragment mGridMenuFragment;
     Toolbar toolbar;
     private TextView infoText;
+    private AppPreferences appPreferences;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -77,6 +78,8 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main2);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        appPreferences = new AppPreferences(this);
 
         mGridMenuFragment = GridMenuFragment.newInstance(R.drawable.bg_pasopati);
 
@@ -119,7 +122,7 @@ public class MainActivity extends AppCompatActivity{
                     Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
                     break;
                 case 5:
-                    Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, BikeCommunityActivity.class));
                     break;
             }
         });
@@ -211,7 +214,8 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onDestroy(){
         if(Utils.requestingLocationUpdates(this)){
-            mService.removeLocationUpdates();
+            if(!appPreferences.getBoolean(AppPreferences.KEY_IS_BIKER, false))
+                mService.removeLocationUpdates();
         }
         super.onDestroy();
     }
